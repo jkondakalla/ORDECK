@@ -1,25 +1,25 @@
 /* Type declarations for Module Federation remote widgets.
    Each remote exposes a single default React component. */
 
-declare module 'plex-widget/Widget' {
+declare module 'plex-plugin/Widget' {
   import { ComponentType } from 'react';
   const Widget: ComponentType;
   export default Widget;
 }
 
-declare module 'lazuros-widget/Widget' {
+declare module 'lazuros-plugin/Widget' {
   import { ComponentType } from 'react';
   const Widget: ComponentType;
   export default Widget;
 }
 
-declare module 'beigeboard-widget/Widget' {
+declare module 'beigeboard-plugin/Widget' {
   import { ComponentType } from 'react';
   const Widget: ComponentType;
   export default Widget;
 }
 
-declare module 'recipe-widget/Widget' {
+declare module 'recipe-plugin/Widget' {
   import { ComponentType } from 'react';
   const Widget: ComponentType;
   export default Widget;

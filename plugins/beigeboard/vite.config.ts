@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'beigeboard-widget',
+      name: 'beigeboard-plugin',
       filename: 'remoteEntry.js',
       exposes: { './Widget': './src/Widget' },
       shared: {

@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'recipe-widget',
+      name: 'recipe-plugin',
       filename: 'remoteEntry.js',
       exposes: { './Widget': './src/Widget' },
       shared: {

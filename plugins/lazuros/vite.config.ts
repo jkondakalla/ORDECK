@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'lazuros-widget',
+      name: 'lazuros-plugin',
       filename: 'remoteEntry.js',
       exposes: { './Widget': './src/Widget' },
       shared: {

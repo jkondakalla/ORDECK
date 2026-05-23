@@ -1,9 +1,9 @@
 services:
-  plex-widget:
+  plex-plugin:
     build:
       context: ../../
-      dockerfile: docker/plex/Dockerfile.widget
-    container_name: ordeck-plex-widget
+      dockerfile: docker/plex/Dockerfile.plugin
+    container_name: ordeck-plex-plugin
     restart: unless-stopped
     ports:
       - "3001:80"

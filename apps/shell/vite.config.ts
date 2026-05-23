@@ -3,10 +3,10 @@ import react from '@vitejs/plugin-react';
 import federation from '@originjs/vite-plugin-federation';
 
 const WIDGET_PORTS: Record<string, number> = {
-  'plex-widget':       3001,
-  'lazuros-widget':    3002,
-  'beigeboard-widget': 3003,
-  'recipe-widget':     3004,
+  'plex-plugin':       3001,
+  'lazuros-plugin':    3002,
+  'beigeboard-plugin': 3003,
+  'recipe-plugin':     3004,
 };
 
 function remoteEntry(port: number) {

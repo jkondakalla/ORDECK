@@ -1,9 +1,9 @@
 services:
-  lazuros-widget:
+  lazuros-plugin:
     build:
       context: ../../
-      dockerfile: docker/lazuros/Dockerfile.widget
-    container_name: ordeck-lazuros-widget
+      dockerfile: docker/lazuros/Dockerfile.plugin
+    container_name: ordeck-lazuros-plugin
     restart: unless-stopped
     ports:
       - "3002:80"

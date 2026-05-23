@@ -2,10 +2,10 @@ import { lazy, Suspense } from 'react';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 const REMOTE_LOADERS: Record<string, () => Promise<{ default: React.ComponentType }>> = {
-  plex:       () => import('plex-widget/Widget'),
-  lazuros:    () => import('lazuros-widget/Widget'),
-  beigeboard: () => import('beigeboard-widget/Widget'),
-  recipe:     () => import('recipe-widget/Widget'),
+  plex:       () => import('plex-plugin/Widget'),
+  lazuros:    () => import('lazuros-plugin/Widget'),
+  beigeboard: () => import('beigeboard-plugin/Widget'),
+  recipe:     () => import('recipe-plugin/Widget'),
 };
 
 const REMOTE_CACHE: Record<string, React.ComponentType> = {};

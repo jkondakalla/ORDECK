@@ -1,9 +1,9 @@
 services:
-  recipe-widget:
+  recipe-plugin:
     build:
       context: ../../
-      dockerfile: docker/recipe/Dockerfile.widget
-    container_name: ordeck-recipe-widget
+      dockerfile: docker/recipe/Dockerfile.plugin
+    container_name: ordeck-recipe-plugin
     restart: unless-stopped
     ports:
       - "3004:80"

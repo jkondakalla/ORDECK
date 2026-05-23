@@ -1,10 +1,10 @@
 # Assumes Hub/ layout: ../../../BeigeBoard/backend relative to this file
 services:
-  beigeboard-widget:
+  beigeboard-plugin:
     build:
       context: ../../
-      dockerfile: docker/beigeboard/Dockerfile.widget
-    container_name: ordeck-beigeboard-widget
+      dockerfile: docker/beigeboard/Dockerfile.plugin
+    container_name: ordeck-beigeboard-plugin
     restart: unless-stopped
     ports:
       - "3003:80"

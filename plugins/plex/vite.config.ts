@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'plex-widget',
+      name: 'plex-plugin',
       filename: 'remoteEntry.js',
       exposes: { './Widget': './src/Widget' },
       shared: {

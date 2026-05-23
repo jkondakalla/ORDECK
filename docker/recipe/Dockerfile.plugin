@@ -4,11 +4,11 @@ WORKDIR /repo
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json tsconfig.base.json ./
 COPY packages/ ./packages/
-COPY widgets/recipe/ ./widgets/recipe/
+COPY plugins/recipe/ ./plugins/recipe/
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @ordeck/recipe-widget build
+RUN pnpm --filter @ordeck/recipe-plugin build
 
 FROM nginx:alpine
-COPY --from=builder /repo/widgets/recipe/dist /usr/share/nginx/html
+COPY --from=builder /repo/plugins/recipe/dist /usr/share/nginx/html
 EXPOSE 80
