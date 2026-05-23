@@ -18,14 +18,22 @@ import { ScopeWidget } from '../widgets/ScopeWidget';
 import { MemMapWidget } from '../widgets/MemMapWidget';
 
 // Tool widgets
-import { StopwatchWidget, WorldClocksWidget, CalcWidget, PomodoroWidget, CalendarWidget } from '../widgets/tools';
+import StopwatchWidget from '../widgets/StopwatchWidget';
+import WorldClocksWidget from '../widgets/WorldClocksWidget';
+import CalcWidget from '../widgets/CalcWidget';
+import PomodoroWidget from '../widgets/PomodoroWidget';
+import CalendarWidget from '../widgets/CalendarWidget';
 
 // Deco widgets
-import {
-  SpinningReelWidget, NixieBankWidget, StatusLightsWidget,
-  GrillePanelWidget, LabelStripWidget, TickerWidget,
-  DataRainWidget, GaugeBankWidget, BlankPanelWidget,
-} from '../widgets/deco';
+import SpinningReelWidget from '../widgets/SpinningReelWidget';
+import NixieBankWidget from '../widgets/NixieBankWidget';
+import StatusLightsWidget from '../widgets/StatusLightsWidget';
+import GrillePanelWidget from '../widgets/GrillePanelWidget';
+import LabelStripWidget from '../widgets/LabelStripWidget';
+import TickerWidget from '../widgets/TickerWidget';
+import DataRainWidget from '../widgets/DataRainWidget';
+import GaugeBankWidget from '../widgets/GaugeBankWidget';
+import BlankPanelWidget from '../widgets/BlankPanelWidget';
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 
