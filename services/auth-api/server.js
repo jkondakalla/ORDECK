@@ -29,7 +29,7 @@ if (!GOOGLE_ID || !GOOGLE_SECRET) {
   process.exit(1);
 }
 
-// ─── Access token: 15 min; refresh token: 7 days ──────────────────────────────
+// ─── Token TTLs ───────────────────────────────────────────────────────────────
 
 const ACCESS_TTL_SEC  = 15 * 60;
 const REFRESH_TTL_SEC = 7 * 24 * 60 * 60;
@@ -49,12 +49,20 @@ db.exec(`
   );
 
   CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id         TEXT PRIMARY KEY,
-    user_id    TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    expires_at INTEGER NOT NULL,
-    created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    expires_at   INTEGER NOT NULL,
+    created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+    last_used_at INTEGER,
+    user_agent   TEXT,
+    ip_address   TEXT
   );
 `);
+
+// Migrate existing DBs that lack the new columns
+['last_used_at INTEGER', 'user_agent TEXT', 'ip_address TEXT'].forEach(colDef => {
+  try { db.exec(`ALTER TABLE refresh_tokens ADD COLUMN ${colDef}`); } catch { /* column exists */ }
+});
 
 const stmts = {
   upsertUser: db.prepare(`
@@ -66,8 +74,8 @@ const stmts = {
       picture = excluded.picture
   `),
   insertRefresh: db.prepare(`
-    INSERT INTO refresh_tokens (id, user_id, expires_at)
-    VALUES (@id, @userId, @expiresAt)
+    INSERT INTO refresh_tokens (id, user_id, expires_at, user_agent, ip_address)
+    VALUES (@id, @userId, @expiresAt, @userAgent, @ipAddress)
   `),
   findRefresh: db.prepare(`
     SELECT rt.id, rt.user_id, rt.expires_at,
@@ -76,9 +84,18 @@ const stmts = {
     JOIN users u ON u.id = rt.user_id
     WHERE rt.id = ?
   `),
-  deleteRefresh: db.prepare(`DELETE FROM refresh_tokens WHERE id = ?`),
-  findUser:      db.prepare(`SELECT * FROM users WHERE id = ?`),
-  purgeExpired:  db.prepare(`DELETE FROM refresh_tokens WHERE expires_at < unixepoch()`),
+  deleteRefresh:  db.prepare(`DELETE FROM refresh_tokens WHERE id = ?`),
+  findUser:       db.prepare(`SELECT * FROM users WHERE id = ?`),
+  purgeExpired:   db.prepare(`DELETE FROM refresh_tokens WHERE expires_at < unixepoch()`),
+  touchRefresh:   db.prepare(`UPDATE refresh_tokens SET last_used_at = unixepoch() WHERE id = ?`),
+  listSessions:   db.prepare(`
+    SELECT id, created_at, last_used_at, user_agent, ip_address
+    FROM refresh_tokens
+    WHERE user_id = ? AND expires_at > unixepoch()
+    ORDER BY last_used_at DESC, created_at DESC
+  `),
+  deleteSession:  db.prepare(`DELETE FROM refresh_tokens WHERE id = ? AND user_id = ?`),
+  deleteOthers:   db.prepare(`DELETE FROM refresh_tokens WHERE user_id = ? AND id != ?`),
 };
 
 // ─── Token helpers ─────────────────────────────────────────────────────────────
@@ -91,10 +108,14 @@ function issueAccessToken(user) {
   );
 }
 
-function createRefreshToken(userId) {
+function createRefreshToken(userId, req) {
   const id        = crypto.randomUUID();
   const expiresAt = Math.floor(Date.now() / 1000) + REFRESH_TTL_SEC;
-  stmts.insertRefresh.run({ id, userId, expiresAt });
+  const userAgent = req?.headers?.['user-agent']?.slice(0, 255) ?? null;
+  const ipAddress = req?.headers?.['x-forwarded-for']?.split(',')[0]?.trim()
+    ?? req?.socket?.remoteAddress
+    ?? null;
+  stmts.insertRefresh.run({ id, userId, expiresAt, userAgent, ipAddress });
   return { id, expiresAt };
 }
 
@@ -108,9 +129,9 @@ function cookieOpts(maxAgeMs) {
   };
 }
 
-function setAuthCookies(res, user) {
-  const accessToken       = issueAccessToken(user);
-  const { id: refreshId, expiresAt } = createRefreshToken(user.id);
+function setAuthCookies(req, res, user) {
+  const accessToken              = issueAccessToken(user);
+  const { id: refreshId, expiresAt } = createRefreshToken(user.id, req);
 
   res.cookie('ordeck_access',  accessToken, cookieOpts(ACCESS_TTL_SEC * 1000));
   res.cookie('ordeck_refresh', refreshId,   cookieOpts(REFRESH_TTL_SEC * 1000));
@@ -119,6 +140,19 @@ function setAuthCookies(res, user) {
 function clearAuthCookies(res) {
   res.clearCookie('ordeck_access',  { path: '/' });
   res.clearCookie('ordeck_refresh', { path: '/' });
+}
+
+// ─── Auth middleware ──────────────────────────────────────────────────────────
+
+function requireAuth(req, res, next) {
+  const token = req.cookies.ordeck_access;
+  if (!token) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET, { issuer: 'ordeck-auth' });
+    next();
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
 }
 
 // ─── OAuth2 client ─────────────────────────────────────────────────────────────
@@ -165,13 +199,12 @@ app.get('/api/auth/google', (req, res) => {
     state,
   });
 
-  // Store state in a short-lived cookie for CSRF verification
   res.cookie('ordeck_oauth_state', state, {
     httpOnly: true,
     sameSite: 'lax',
     secure:   IS_PROD,
     path:     '/',
-    maxAge:   5 * 60 * 1000, // 5 minutes
+    maxAge:   5 * 60 * 1000,
   });
 
   res.redirect(url);
@@ -182,7 +215,6 @@ app.get('/api/auth/google', (req, res) => {
 app.get('/api/auth/google/callback', async (req, res) => {
   const { code, state, error } = req.query;
 
-  // CSRF check
   const savedState = req.cookies.ordeck_oauth_state;
   res.clearCookie('ordeck_oauth_state', { path: '/' });
 
@@ -217,7 +249,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     };
 
     stmts.upsertUser.run(user);
-    setAuthCookies(res, user);
+    setAuthCookies(req, res, user);
 
     return res.redirect(SHELL_URL);
   } catch (e) {
@@ -251,11 +283,11 @@ app.post('/api/auth/refresh', (req, res) => {
     picture: row.picture,
   };
 
-  setAuthCookies(res, user);
+  setAuthCookies(req, res, user);
   res.json({ ok: true });
 });
 
-// ─── DELETE /api/auth/session ── logout ────────────────────────────────────────
+// ─── DELETE /api/auth/session ── logout current session ───────────────────────
 
 app.delete('/api/auth/session', (req, res) => {
   const refreshId = req.cookies.ordeck_refresh;
@@ -272,6 +304,10 @@ app.get('/api/auth/me', (req, res) => {
 
   try {
     const payload = jwt.verify(token, JWT_SECRET, { issuer: 'ordeck-auth' });
+    // Touch last_used on the refresh token if present
+    const refreshId = req.cookies.ordeck_refresh;
+    if (refreshId) stmts.touchRefresh.run(refreshId);
+
     res.json({
       id:      payload.sub,
       email:   payload.email,
@@ -281,6 +317,44 @@ app.get('/api/auth/me', (req, res) => {
   } catch {
     return res.status(401).json({ error: 'Invalid or expired token' });
   }
+});
+
+// ─── GET /api/auth/sessions ── list all active sessions ───────────────────────
+
+app.get('/api/auth/sessions', requireAuth, (req, res) => {
+  const sessions = stmts.listSessions.all(req.user.sub);
+  const currentRefreshId = req.cookies.ordeck_refresh;
+
+  res.json(sessions.map(s => ({
+    id:          s.id,
+    createdAt:   s.created_at,
+    lastUsedAt:  s.last_used_at,
+    userAgent:   s.user_agent,
+    ipAddress:   s.ip_address,
+    isCurrent:   s.id === currentRefreshId,
+  })));
+});
+
+// ─── DELETE /api/auth/sessions/:id ── revoke a specific session ───────────────
+
+app.delete('/api/auth/sessions/:id', requireAuth, (req, res) => {
+  const { changes } = stmts.deleteSession.run(req.params.id, req.user.sub);
+  if (!changes) return res.status(404).json({ error: 'Session not found' });
+
+  // If the revoked session is the current one, clear cookies too
+  if (req.params.id === req.cookies.ordeck_refresh) {
+    clearAuthCookies(res);
+  }
+
+  res.json({ ok: true });
+});
+
+// ─── DELETE /api/auth/sessions ── revoke all OTHER sessions ──────────────────
+
+app.delete('/api/auth/sessions', requireAuth, (req, res) => {
+  const currentRefreshId = req.cookies.ordeck_refresh || '';
+  const { changes } = stmts.deleteOthers.run(req.user.sub, currentRefreshId);
+  res.json({ ok: true, revoked: changes });
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────

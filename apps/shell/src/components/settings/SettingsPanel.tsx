@@ -1,7 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
+import { useState } from 'react';
 import { Led, Screw, Vent, LabelTape } from '../hardware';
 import type { Settings } from './types';
 import { PHOSPHOR_GROUPS, STYLES, SHELLS } from './data';
+import { SessionsPanel } from './SessionsPanel';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -11,7 +13,11 @@ interface SettingsPanelProps {
   reset: () => void;
 }
 
+type Tab = 'config' | 'sessions';
+
 export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsPanelProps) {
+  const [tab, setTab] = useState<Tab>('config');
+
   return (
     <>
       <div onClick={onClose} style={{
@@ -57,7 +63,7 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
             fontWeight: 700,
             letterSpacing: '0.18em',
             fontFamily: 'var(--hub-font-seg)',
-          }} className="glow-dim">CONFIG · AESTHETICS</span>
+          }} className="glow-dim">{tab === 'config' ? 'CONFIG · AESTHETICS' : 'CONFIG · SESSIONS'}</span>
           <Vent slats={3} width={28} style={{ marginLeft: 'auto' }} />
           <button onClick={onClose} style={{
             width: 20,
@@ -75,6 +81,31 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
           <Screw size={7} rot={-22} />
         </div>
 
+        {/* Tab bar */}
+        <div style={{
+          display: 'flex',
+          borderBottom: '1px solid var(--hub-line-strong)',
+          flexShrink: 0,
+        }}>
+          {(['config', 'sessions'] as Tab[]).map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              flex: 1,
+              padding: '9px 0',
+              background: tab === t ? 'var(--hub-bg-1)' : 'var(--hub-bg-2)',
+              border: 'none',
+              borderBottom: tab === t ? '2px solid var(--hub-amber)' : '2px solid transparent',
+              color: tab === t ? 'var(--hub-amber)' : 'var(--hub-cream-faint)',
+              fontFamily: 'var(--hub-font-mono)',
+              fontSize: 9,
+              letterSpacing: '0.2em',
+              cursor: 'pointer',
+              transition: 'all 0.12s',
+            }}>
+              {t === 'config' ? 'AESTHETICS' : 'SESSIONS'}
+            </button>
+          ))}
+        </div>
+
         <div style={{
           flex: 1,
           overflow: 'auto',
@@ -83,84 +114,88 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
           flexDirection: 'column',
           gap: 18,
         }}>
-          <SettingsSection title="VISUAL STYLE" code="01">
-            <StyleGrid
-              options={STYLES}
-              value={settings.style}
-              onChange={v => set('style', v as Settings['style'])}
-            />
-          </SettingsSection>
+          {tab === 'sessions' ? <SessionsPanel /> : (
+            <>
+              <SettingsSection title="VISUAL STYLE" code="01">
+                <StyleGrid
+                  options={STYLES}
+                  value={settings.style}
+                  onChange={v => set('style', v as Settings['style'])}
+                />
+              </SettingsSection>
 
-          <SettingsSection title="PHOSPHOR · COLOR" code="02">
-            {PHOSPHOR_GROUPS.map(g => (
-              <PhosphorGroup
-                key={g.title}
-                title={g.title}
-                items={g.items}
-                value={settings.phosphor}
-                onChange={v => set('phosphor', v)}
-              />
-            ))}
-          </SettingsSection>
+              <SettingsSection title="PHOSPHOR · COLOR" code="02">
+                {PHOSPHOR_GROUPS.map(g => (
+                  <PhosphorGroup
+                    key={g.title}
+                    title={g.title}
+                    items={g.items}
+                    value={settings.phosphor}
+                    onChange={v => set('phosphor', v)}
+                  />
+                ))}
+              </SettingsSection>
 
-          <SettingsSection title="SHELL · TONE" code="03">
-            <SwatchGrid
-              options={SHELLS}
-              value={settings.shell}
-              onChange={v => set('shell', v as Settings['shell'])}
-              cols={5}
-            />
-          </SettingsSection>
+              <SettingsSection title="SHELL · TONE" code="03">
+                <SwatchGrid
+                  options={SHELLS}
+                  value={settings.shell}
+                  onChange={v => set('shell', v as Settings['shell'])}
+                  cols={5}
+                />
+              </SettingsSection>
 
-          <SettingsSection title="CRT · EFFECTS" code="04">
-            <SettingsSlider
-              label="SCANLINES"
-              value={settings.scanlines}
-              min={0} max={0.08} step={0.002}
-              fmt={v => Math.round((v / 0.08) * 100) + '%'}
-              onChange={v => set('scanlines', v)}
-            />
-            <SettingsSlider
-              label="VIGNETTE"
-              value={settings.vignette}
-              min={0} max={0.8} step={0.02}
-              fmt={v => Math.round((v / 0.8) * 100) + '%'}
-              onChange={v => set('vignette', v)}
-            />
-            <SettingsSlider
-              label="CANVAS GRID"
-              value={settings.gridDensity}
-              min={0} max={2} step={0.1}
-              fmt={v => (v * 100).toFixed(0) + '%'}
-              onChange={v => set('gridDensity', v)}
-            />
-          </SettingsSection>
+              <SettingsSection title="CRT · EFFECTS" code="04">
+                <SettingsSlider
+                  label="SCANLINES"
+                  value={settings.scanlines}
+                  min={0} max={0.08} step={0.002}
+                  fmt={v => Math.round((v / 0.08) * 100) + '%'}
+                  onChange={v => set('scanlines', v)}
+                />
+                <SettingsSlider
+                  label="VIGNETTE"
+                  value={settings.vignette}
+                  min={0} max={0.8} step={0.02}
+                  fmt={v => Math.round((v / 0.8) * 100) + '%'}
+                  onChange={v => set('vignette', v)}
+                />
+                <SettingsSlider
+                  label="CANVAS GRID"
+                  value={settings.gridDensity}
+                  min={0} max={2} step={0.1}
+                  fmt={v => (v * 100).toFixed(0) + '%'}
+                  onChange={v => set('gridDensity', v)}
+                />
+              </SettingsSection>
 
-          <SettingsSection title="HARDWARE" code="05">
-            <SettingsToggle label="BOLD GLOW"        hint="thicker phosphor halo"    value={settings.boldGlow}    onChange={v => set('boldGlow', v)} />
-            <SettingsToggle label="WIDGET SCREWS"    hint="show panel hardware"      value={settings.showScrews}  onChange={v => set('showScrews', v)} />
-            <SettingsToggle label="SYSTEM BUS STRIP" hint="top telemetry waveform"   value={settings.showBus}     onChange={v => set('showBus', v)} />
-            <SettingsToggle label="RIGHT VU RAIL"    hint="meters + knobs panel"     value={settings.showRail}    onChange={v => set('showRail', v)} />
-          </SettingsSection>
+              <SettingsSection title="HARDWARE" code="05">
+                <SettingsToggle label="BOLD GLOW"        hint="thicker phosphor halo"    value={settings.boldGlow}    onChange={v => set('boldGlow', v)} />
+                <SettingsToggle label="WIDGET SCREWS"    hint="show panel hardware"      value={settings.showScrews}  onChange={v => set('showScrews', v)} />
+                <SettingsToggle label="SYSTEM BUS STRIP" hint="top telemetry waveform"   value={settings.showBus}     onChange={v => set('showBus', v)} />
+                <SettingsToggle label="RIGHT VU RAIL"    hint="meters + knobs panel"     value={settings.showRail}    onChange={v => set('showRail', v)} />
+              </SettingsSection>
 
-          <SettingsSection title="RESET" code="06">
-            <ResetButton onReset={reset} />
-          </SettingsSection>
+              <SettingsSection title="RESET" code="06">
+                <ResetButton onReset={reset} />
+              </SettingsSection>
 
-          <div style={{
-            marginTop: 8,
-            padding: 10,
-            border: '1px dashed var(--hub-line)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            fontSize: 8,
-            color: 'var(--hub-cream-faint)',
-            letterSpacing: '0.15em',
-          }}>
-            <Led color="green" size="sm" />
-            SETTINGS PERSIST IN BROWSER · LOCALSTORAGE
-          </div>
+              <div style={{
+                marginTop: 8,
+                padding: 10,
+                border: '1px dashed var(--hub-line)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 8,
+                color: 'var(--hub-cream-faint)',
+                letterSpacing: '0.15em',
+              }}>
+                <Led color="green" size="sm" />
+                SETTINGS PERSIST IN BROWSER · LOCALSTORAGE
+              </div>
+            </>
+          )}
         </div>
       </aside>
     </>

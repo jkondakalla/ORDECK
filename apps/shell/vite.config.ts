@@ -1,52 +1,75 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import federation from '@originjs/vite-plugin-federation';
 
-const WIDGET_PORTS: Record<string, number> = {
+// In development:  plugins served on localhost:300x
+// In production:   plugins served via nginx at https://YOUR_DOMAIN/plugins/xxx/
+//
+// Set VITE_PLUGIN_BASE_URL in the shell's .env.production, e.g.:
+//   VITE_PLUGIN_BASE_URL=https://YOUR_DOMAIN/plugins
+
+const DEV_PORTS: Record<string, number> = {
   'plex-plugin':       3001,
   'lazuros-plugin':    3002,
   'beigeboard-plugin': 3003,
   'recipe-plugin':     3004,
 };
 
-function remoteEntry(port: number) {
-  return `http://localhost:${port}/assets/remoteEntry.js`;
-}
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const base = env.VITE_PLUGIN_BASE_URL?.replace(/\/$/, '');
 
-export default defineConfig({
-  plugins: [
-    react(),
-    federation({
-      name: 'shell',
-      remotes: Object.fromEntries(
-        Object.entries(WIDGET_PORTS).map(([name, port]) => [name, remoteEntry(port)])
-      ),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      shared: {
-        react: { singleton: true, requiredVersion: '^18' },
-        'react-dom': { singleton: true, requiredVersion: '^18' },
-      } as any,
-    }),
-  ],
-  resolve: {
-    alias: {
-      '@hub/ui': '../../packages/ui/src',
-      '@hub/types': '../../packages/types/src/index.ts',
-    },
-  },
-  server: {
-    port: 3000,
-    proxy: {
-      '/api/auth': {
-        target:             'http://localhost:8000',
-        changeOrigin:       true,
-        cookieDomainRewrite: 'localhost',
+  const remotes = Object.fromEntries(
+    Object.entries(DEV_PORTS).map(([name, port]) => {
+      // strip trailing '-plugin' for the nginx path segment
+      const slug = name.replace(/-plugin$/, '');
+      const url  = base
+        ? `${base}/${slug}/assets/remoteEntry.js`
+        : `http://localhost:${port}/assets/remoteEntry.js`;
+      return [name, url];
+    })
+  );
+
+  return {
+    plugins: [
+      react(),
+      federation({
+        name: 'shell',
+        remotes,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        shared: {
+          react: { singleton: true, requiredVersion: '^18' },
+          'react-dom': { singleton: true, requiredVersion: '^18' },
+        } as any,
+      }),
+    ],
+    resolve: {
+      alias: {
+        '@hub/ui':    '../../packages/ui/src',
+        '@hub/types': '../../packages/types/src/index.ts',
       },
     },
-  },
-  build: {
-    target: 'esnext',
-    minify: false,
-    cssCodeSplit: false,
-  },
+    server: {
+      port: 3000,
+      proxy: {
+        // Dev proxy: routes /api/auth/* → auth service so httpOnly cookies
+        // land on localhost:3000 (same origin as the shell)
+        '/api/auth': {
+          target:              'http://localhost:8000',
+          changeOrigin:        true,
+          cookieDomainRewrite: 'localhost',
+        },
+        // Dev proxy: routes data APIs → their respective services
+        '/api/plex':       { target: 'http://localhost:8001', changeOrigin: true },
+        '/api/recipes':    { target: 'http://localhost:8002', changeOrigin: true },
+        '/api/lazuros':    { target: 'http://localhost:8003', changeOrigin: true },
+        '/api/beigeboard': { target: 'http://localhost:3001', changeOrigin: true },
+      },
+    },
+    build: {
+      target:       'esnext',
+      minify:       false,
+      cssCodeSplit: false,
+    },
+  };
 });
