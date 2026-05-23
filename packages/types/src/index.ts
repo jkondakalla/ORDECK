@@ -23,6 +23,16 @@ export interface WidgetStatus {
   lastChecked?: string;
 }
 
+export interface WidgetOverrides {
+  header?: 'classic' | 'band' | 'tab' | 'chip' | 'strip';
+  color?: string;
+  title?: string;
+  textScale?: number;
+  radius?: number;
+  borderStyle?: 'solid' | 'dashed' | 'dotted' | 'double' | 'none';
+  opacity?: number;
+}
+
 export interface WidgetInstance {
   id: number;
   type: WidgetType;
@@ -30,6 +40,7 @@ export interface WidgetInstance {
   y: number;
   w: number;
   h: number;
+  overrides?: WidgetOverrides;
 }
 
 export type WidgetType =
@@ -37,6 +48,22 @@ export type WidgetType =
   | 'plugins'
   | 'connections'
   | 'log'
+  | 'scope'
+  | 'memmap'
+  | 'stopwatch'
+  | 'worldclocks'
+  | 'calc'
+  | 'pomodoro'
+  | 'calendar'
+  | 'reel'
+  | 'nixie'
+  | 'status'
+  | 'grille'
+  | 'label'
+  | 'ticker'
+  | 'datarain'
+  | 'gauges'
+  | 'blank'
   | 'plex'
   | 'lazuros'
   | 'beigeboard'

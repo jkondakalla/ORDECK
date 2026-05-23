@@ -1,39 +1,34 @@
-import { CSSProperties, ComponentType } from 'react';
+import { ComponentType, CSSProperties } from 'react';
 import { WidgetInstance } from '@hub/types';
 import Widget from './Widget';
-import ClockWidget from '../../widgets/ClockWidget';
-import PluginsWidget from '../../widgets/PluginsWidget';
-import ConnectionsWidget from '../../widgets/ConnectionsWidget';
-import LogWidget from '../../widgets/LogWidget';
+import { WidgetMeta } from './WidgetHeaders';
 import RemoteWidget from '../../widgets/RemoteWidget';
+import { Grille, DymoTape } from '../hardware';
 
-interface WidgetMeta {
-  title: string;
-  code: string;
+export interface CanvasRegistryEntry extends WidgetMeta {
   component: ComponentType<{ widgetId: number }> | null;
   remote?: boolean;
+  w: number;
+  h: number;
 }
-
-const WIDGET_META: Record<string, WidgetMeta> = {
-  clock:       { title: 'CHRONO://01',      code: 'MOD-001', component: ClockWidget },
-  plugins:     { title: 'PLUGIN://GRID',    code: 'MOD-002', component: PluginsWidget },
-  connections: { title: 'CONN://STATUS',    code: 'MOD-003', component: ConnectionsWidget },
-  log:         { title: 'OP://LOG',         code: 'MOD-004', component: LogWidget },
-  plex:        { title: 'PLEX://MEDIA',     code: 'RMT-001', component: null, remote: true },
-  lazuros:     { title: 'LAZUROS://COMPUTE',code: 'RMT-002', component: null, remote: true },
-  beigeboard:  { title: 'BEIGEBOARD://FIN', code: 'RMT-003', component: null, remote: true },
-  recipe:      { title: 'RECIPE://MGMT',    code: 'RMT-004', component: null, remote: true },
-};
-
-export { WIDGET_META };
 
 interface CanvasProps {
   widgets: WidgetInstance[];
+  registry: Record<string, CanvasRegistryEntry>;
   onUpdateWidget: (id: number, patch: Partial<WidgetInstance>) => void;
   onCloseWidget: (id: number) => void;
+  onFocusWidget?: (id: number) => void;
+  onContextWidget?: (id: number, x: number, y: number) => void;
 }
 
-export default function Canvas({ widgets, onUpdateWidget, onCloseWidget }: CanvasProps) {
+export default function Canvas({
+  widgets,
+  registry,
+  onUpdateWidget,
+  onCloseWidget,
+  onFocusWidget,
+  onContextWidget,
+}: CanvasProps) {
   return (
     <main style={{
       flex: 1,
@@ -41,30 +36,31 @@ export default function Canvas({ widgets, onUpdateWidget, onCloseWidget }: Canva
       overflow: 'hidden',
       backgroundColor: 'var(--hub-bg-0)',
       backgroundImage: `
-        linear-gradient(rgba(255,176,0,0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,176,0,0.03) 1px, transparent 1px)
+        linear-gradient(rgba(255,176,0,calc(0.03 * var(--canvas-grid-opacity, 1))) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,176,0,calc(0.03 * var(--canvas-grid-opacity, 1))) 1px, transparent 1px)
       `,
       backgroundSize: '40px 40px',
     }}>
       <CanvasMarks />
 
-      {widgets.map(w => {
-        const meta = WIDGET_META[w.type];
-        if (!meta) return null;
+      {widgets.length === 0 && <EmptyState />}
 
+      {widgets.map(w => {
+        const entry = registry[w.type];
+        if (!entry) return null;
         return (
           <Widget
             key={w.id}
             data={w}
-            title={meta.title}
-            code={meta.code}
-            isRemote={!!meta.remote}
+            meta={entry}
             onUpdate={patch => onUpdateWidget(w.id, patch)}
             onClose={() => onCloseWidget(w.id)}
+            onFocus={() => onFocusWidget?.(w.id)}
+            onContext={(x, y) => onContextWidget?.(w.id, x, y)}
           >
-            {meta.remote
+            {entry.remote
               ? <RemoteWidget type={w.type} />
-              : meta.component && <meta.component widgetId={w.id} />
+              : entry.component && <entry.component widgetId={w.id} />
             }
           </Widget>
         );
@@ -72,6 +68,8 @@ export default function Canvas({ widgets, onUpdateWidget, onCloseWidget }: Canva
     </main>
   );
 }
+
+// ─── Corner marks ─────────────────────────────────────────────────────────────
 
 function CanvasMarks() {
   const corner = (style: CSSProperties) => (
@@ -87,6 +85,27 @@ function CanvasMarks() {
       {corner({ top: 0, right: 0, borderWidth: '1.5px 1.5px 0 0' })}
       {corner({ bottom: 0, left: 0, borderWidth: '0 0 1.5px 1.5px' })}
       {corner({ bottom: 0, right: 0, borderWidth: '0 1.5px 1.5px 0' })}
+    </div>
+  );
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+
+function EmptyState() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      gap: 16, pointerEvents: 'none',
+    }}>
+      <Grille cols={14} rows={8} dotSize={3} gap={4} style={{ opacity: 0.4 }} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+        <DymoTape style={{ fontSize: 10, letterSpacing: '0.3em' }}>NO MODULES LOADED</DymoTape>
+        <span style={{ fontSize: 9, color: 'var(--hub-cream-faint)', letterSpacing: '0.22em' }}>
+          SELECT A MODULE FROM THE RACK
+        </span>
+      </div>
     </div>
   );
 }
