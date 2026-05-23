@@ -2,7 +2,7 @@ import { ComponentType, CSSProperties } from 'react';
 import { WidgetInstance } from '@hub/types';
 import Widget from './Widget';
 import { WidgetMeta } from './WidgetHeaders';
-import RemoteWidget from '../../widgets/RemoteWidget';
+import RemoteWidget from '../../widgets/core/RemoteWidget';
 import { Grille, DymoTape } from '../hardware';
 
 export interface CanvasRegistryEntry extends WidgetMeta {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { DymoTape, Led, SegDisplay } from '../components/hardware';
-import { ToolButton } from './_helpers';
+import { DymoTape, Led, SegDisplay } from '../../components/hardware';
+import { ToolButton } from '../helpers';
 
 interface SwState {
   running: boolean;

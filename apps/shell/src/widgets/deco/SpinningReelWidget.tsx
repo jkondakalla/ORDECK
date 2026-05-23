@@ -1,4 +1,4 @@
-import { Led, Vent, DymoTape } from '../components/hardware';
+import { Led, Vent, DymoTape } from '../../components/hardware';
 
 function Reel({ speed = 4, reverse = false }: { speed?: number; reverse?: boolean }) {
   return (

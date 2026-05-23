@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { DymoTape, Led } from '../components/hardware';
-import { MiniLabel, ToolButton } from './_helpers';
+import { DymoTape, Led } from '../../components/hardware';
+import { MiniLabel, ToolButton } from '../helpers';
 
 interface PomState {
   phase: 'work' | 'break';

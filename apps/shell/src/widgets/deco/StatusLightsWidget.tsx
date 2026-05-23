@@ -1,4 +1,4 @@
-import { Led, DymoTape, useTick } from '../components/hardware';
+import { Led, DymoTape, useTick } from '../../components/hardware';
 
 export default function StatusLightsWidget() {
   const tick = useTick(400);

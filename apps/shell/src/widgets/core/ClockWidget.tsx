@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { SegDisplay, DymoTape, Led } from '../components/hardware';
+import { SegDisplay, DymoTape, Led } from '../../components/hardware';
 
 function Field({ label, value }: { label: string; value: string }) {
   return (

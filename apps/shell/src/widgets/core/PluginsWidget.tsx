@@ -1,6 +1,6 @@
 import { useState, ReactNode } from 'react';
 import { WidgetManifest } from '@hub/types';
-import usePlugins from '../hooks/usePlugins';
+import usePlugins from '../../hooks/usePlugins';
 
 const ICONS: Record<string, string> = {
   grid: '◈', terminal: '⎔', chart: '▣', cloud: '◉',

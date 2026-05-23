@@ -6,34 +6,34 @@ import Footer from '../components/Footer';
 import Canvas, { CanvasRegistryEntry } from '../components/canvas/Canvas';
 import BusStrip from '../components/BusStrip';
 import RightRail from '../components/RightRail';
-import { useSettings, SettingsPanel } from '../components/Settings';
+import { useSettings, SettingsPanel } from '../components/settings';
 import { ContextSystem, ContextState } from '../components/ContextMenu';
 
 // Core widgets
-import ClockWidget from '../widgets/ClockWidget';
-import ConnectionsWidget from '../widgets/ConnectionsWidget';
-import PluginsWidget from '../widgets/PluginsWidget';
-import LogWidget from '../widgets/LogWidget';
-import { ScopeWidget } from '../widgets/ScopeWidget';
-import { MemMapWidget } from '../widgets/MemMapWidget';
+import ClockWidget from '../widgets/core/ClockWidget';
+import ConnectionsWidget from '../widgets/core/ConnectionsWidget';
+import PluginsWidget from '../widgets/core/PluginsWidget';
+import LogWidget from '../widgets/core/LogWidget';
+import { ScopeWidget } from '../widgets/core/ScopeWidget';
+import { MemMapWidget } from '../widgets/core/MemMapWidget';
 
 // Tool widgets
-import StopwatchWidget from '../widgets/StopwatchWidget';
-import WorldClocksWidget from '../widgets/WorldClocksWidget';
-import CalcWidget from '../widgets/CalcWidget';
-import PomodoroWidget from '../widgets/PomodoroWidget';
-import CalendarWidget from '../widgets/CalendarWidget';
+import StopwatchWidget from '../widgets/tools/StopwatchWidget';
+import WorldClocksWidget from '../widgets/tools/WorldClocksWidget';
+import CalcWidget from '../widgets/tools/CalcWidget';
+import PomodoroWidget from '../widgets/tools/PomodoroWidget';
+import CalendarWidget from '../widgets/tools/CalendarWidget';
 
 // Deco widgets
-import SpinningReelWidget from '../widgets/SpinningReelWidget';
-import NixieBankWidget from '../widgets/NixieBankWidget';
-import StatusLightsWidget from '../widgets/StatusLightsWidget';
-import GrillePanelWidget from '../widgets/GrillePanelWidget';
-import LabelStripWidget from '../widgets/LabelStripWidget';
-import TickerWidget from '../widgets/TickerWidget';
-import DataRainWidget from '../widgets/DataRainWidget';
-import GaugeBankWidget from '../widgets/GaugeBankWidget';
-import BlankPanelWidget from '../widgets/BlankPanelWidget';
+import SpinningReelWidget from '../widgets/deco/SpinningReelWidget';
+import NixieBankWidget from '../widgets/deco/NixieBankWidget';
+import StatusLightsWidget from '../widgets/deco/StatusLightsWidget';
+import GrillePanelWidget from '../widgets/deco/GrillePanelWidget';
+import LabelStripWidget from '../widgets/deco/LabelStripWidget';
+import TickerWidget from '../widgets/deco/TickerWidget';
+import DataRainWidget from '../widgets/deco/DataRainWidget';
+import GaugeBankWidget from '../widgets/deco/GaugeBankWidget';
+import BlankPanelWidget from '../widgets/deco/BlankPanelWidget';
 
 // ─── Registry ─────────────────────────────────────────────────────────────────
 

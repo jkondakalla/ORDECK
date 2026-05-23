@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import ErrorBoundary from '../components/ErrorBoundary';
+import ErrorBoundary from '../../components/ErrorBoundary';
 
 const REMOTE_LOADERS: Record<string, () => Promise<{ default: React.ComponentType }>> = {
   plex:       () => import('plex-widget/Widget'),

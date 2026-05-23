@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MiniLabel } from './_helpers';
+import { MiniLabel } from '../helpers';
 
 function compute(a: number, b: number, op: string): number {
   switch (op) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, CSSProperties } from 'react';
-import { MiniLabel } from './_helpers';
+import { MiniLabel } from '../helpers';
 
 export default function CalendarWidget() {
   const [now, setNow] = useState(new Date());

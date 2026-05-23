@@ -1,4 +1,4 @@
-import { DymoTape, useTick } from '../components/hardware';
+import { DymoTape, useTick } from '../../components/hardware';
 
 function AnalogGauge({ label, v }: { label: string; v: number }) {
   const angle = -120 + Math.max(0, Math.min(1, v)) * 240;

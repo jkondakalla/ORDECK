@@ -1,6 +1,6 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { Led, Screw, Vent, DymoTape } from './hardware';
-import { ConfigButton } from './Settings';
+import { ConfigButton } from './settings';
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
 

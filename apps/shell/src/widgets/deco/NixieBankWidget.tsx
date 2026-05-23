@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DymoTape, useTick } from '../components/hardware';
+import { DymoTape, useTick } from '../../components/hardware';
 
 function NixieDigit({ char }: { char: string }) {
   return (

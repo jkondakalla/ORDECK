@@ -1,4 +1,4 @@
-import { Screw, LabelTape } from '../components/hardware';
+import { Screw, LabelTape } from '../../components/hardware';
 
 export default function GrillePanelWidget() {
   return (

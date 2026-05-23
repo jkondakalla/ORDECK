@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Led, DymoTape } from '../components/hardware';
+import { Led, DymoTape } from '../../components/hardware';
 import type { WidgetProps } from '@hub/types';
 
 export default function TickerWidget({ widgetId }: WidgetProps) {

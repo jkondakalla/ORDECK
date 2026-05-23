@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useWaveform } from '../components/hardware';
-import { Led } from '../components/hardware';
+import { useWaveform } from '../../components/hardware';
+import { Led } from '../../components/hardware';
 
 function ScopeTrace({ points, color, offset = 0.5, amp = 0.5 }: {
   points: number[];

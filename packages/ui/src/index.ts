@@ -1,3 +1,3 @@
-export { default as Button } from './components/Button';
-export { default as Card } from './components/Card';
-export { default as Badge } from './components/Badge';
+// @hub/ui — shared design tokens and components
+// Import tokens directly: import '@hub/ui/tokens.css'
+export { WidgetShell } from './WidgetShell';

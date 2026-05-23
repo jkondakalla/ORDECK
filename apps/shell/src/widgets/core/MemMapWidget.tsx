@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTick } from '../components/hardware';
+import { useTick } from '../../components/hardware';
 
 export function MemMapWidget() {
   const tick = useTick(700);

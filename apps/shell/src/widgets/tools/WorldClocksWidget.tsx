@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { DymoTape } from '../components/hardware';
-import { MiniLabel } from './_helpers';
+import { DymoTape } from '../../components/hardware';
+import { MiniLabel } from '../helpers';
 
 const ZONES = [
   { id: 'sfo', label: 'SFO', name: 'San Francisco', tz: 'America/Los_Angeles' },

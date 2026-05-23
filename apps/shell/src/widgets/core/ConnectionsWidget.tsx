@@ -1,6 +1,6 @@
 import { useEffect, useState, ReactNode } from 'react';
 import { WidgetManifest, WidgetStatus } from '@hub/types';
-import usePlugins from '../hooks/usePlugins';
+import usePlugins from '../../hooks/usePlugins';
 
 export default function ConnectionsWidget() {
   const { plugins, loading, error } = usePlugins(8000);

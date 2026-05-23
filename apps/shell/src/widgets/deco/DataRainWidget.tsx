@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useTick } from '../components/hardware';
+import { useTick } from '../../components/hardware';
 
 const RAIN_CHARS = '01アイウエオカキクABCDEF<>{}[]/*+';
 
