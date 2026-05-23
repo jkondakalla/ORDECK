@@ -1,7 +1,19 @@
+# Assumes Hub/ layout: ../../../BeigeBoard/backend relative to this file
 services:
+  beigeboard-widget:
+    build:
+      context: ../../
+      dockerfile: docker/beigeboard/Dockerfile.widget
+    container_name: ordeck-beigeboard-widget
+    restart: unless-stopped
+    ports:
+      - "3003:80"
+    networks:
+      - ordeck-net
+
   beigeboard-api:
     build:
-      context: ../../services/beigeboard-api
+      context: ../../../BeigeBoard/backend
     container_name: ordeck-beigeboard-api
     restart: unless-stopped
     ports:
