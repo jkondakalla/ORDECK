@@ -21,10 +21,11 @@ export default defineConfig({
       remotes: Object.fromEntries(
         Object.entries(WIDGET_PORTS).map(([name, port]) => [name, remoteEntry(port)])
       ),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       shared: {
         react: { singleton: true, requiredVersion: '^18' },
         'react-dom': { singleton: true, requiredVersion: '^18' },
-      },
+      } as any,
     }),
   ],
   resolve: {
@@ -35,6 +36,13 @@ export default defineConfig({
   },
   server: {
     port: 3000,
+    proxy: {
+      '/api/auth': {
+        target:             'http://localhost:8000',
+        changeOrigin:       true,
+        cookieDomainRewrite: 'localhost',
+      },
+    },
   },
   build: {
     target: 'esnext',

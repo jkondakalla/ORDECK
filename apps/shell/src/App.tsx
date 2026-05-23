@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import BootSequence from './components/BootSequence';
+import AuthGuard from './components/AuthGuard';
 import Dashboard from './pages/Dashboard';
 
 export default function App() {
@@ -8,7 +9,11 @@ export default function App() {
   return (
     <>
       <BootSequence onDone={() => setBooted(true)} />
-      {booted && <Dashboard />}
+      {booted && (
+        <AuthGuard>
+          <Dashboard />
+        </AuthGuard>
+      )}
     </>
   );
 }
