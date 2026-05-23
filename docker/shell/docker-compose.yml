@@ -1,0 +1,15 @@
+services:
+  shell:
+    build:
+      context: ../../apps/shell
+      dockerfile: ../../docker/shell/Dockerfile
+    container_name: ordeck-shell
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - ordeck-net
+
+networks:
+  ordeck-net:
+    external: true

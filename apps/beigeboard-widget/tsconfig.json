@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@hub/beigeboard": ["../../../BeigeBoard/src/index.ts"],
+      "@hub/beigeboard/*": ["../../../BeigeBoard/src/*"],
+      "@hub/ui": ["../../packages/ui/src/index.ts"],
+      "@hub/ui/*": ["../../packages/ui/src/*"],
+      "@hub/types": ["../../packages/types/src/index.ts"]
+    }
+  },
+  "include": ["src", "../../../BeigeBoard/src"]
+}

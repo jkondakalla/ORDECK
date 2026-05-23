@@ -1,0 +1,47 @@
+/* @hub/ui -- cassette futurism design tokens
+   All ORDECK widgets import this file.
+   These variables are the single source of truth for the visual system. */
+
+:root {
+  /* Background layers */
+  --hub-bg-0: #11100d;
+  --hub-bg-1: #1a1814;
+  --hub-bg-2: #232019;
+  --hub-bg-3: #2c2820;
+
+  /* Border lines */
+  --hub-line: #3a3528;
+  --hub-line-strong: #4a4232;
+
+  /* Phosphor palette */
+  --hub-amber: #ffb000;
+  --hub-amber-dim: #8a5f00;
+  --hub-amber-glow: rgba(255, 176, 0, 0.35);
+
+  /* Accents */
+  --hub-cyan: #4ecdc4;
+  --hub-cyan-dim: #2a6e6a;
+  --hub-red: #ff4530;
+  --hub-green: #5cd66a;
+
+  /* Text */
+  --hub-cream: #d6cba8;
+  --hub-cream-dim: #8a8067;
+
+  /* Typography */
+  --hub-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --hub-font-sans: 'IBM Plex Sans', system-ui, sans-serif;
+
+  /* Spacing grid */
+  --hub-grid: 40px;
+  --hub-radius: 0px;
+
+  /* Shadows */
+  --hub-shadow-amber: 0 0 6px var(--hub-amber-glow);
+  --hub-shadow-widget: 0 0 0 1px var(--hub-amber-dim);
+
+  /* Shell layout */
+  --hub-header-h: 56px;
+  --hub-footer-h: 28px;
+  --hub-sidebar-w: 240px;
+}

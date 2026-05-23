@@ -1,0 +1,22 @@
+{
+  "name": "ordeck",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "dev:shell": "turbo run dev --filter=@ordeck/shell",
+    "build:shell": "turbo run build --filter=@ordeck/shell",
+    "build:ui": "turbo run build --filter=@hub/ui"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20",
+    "pnpm": ">=9"
+  }
+}

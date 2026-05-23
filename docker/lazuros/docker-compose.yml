@@ -1,0 +1,25 @@
+services:
+  lazuros-widget:
+    build:
+      context: ../../
+      dockerfile: docker/lazuros/Dockerfile.widget
+    container_name: ordeck-lazuros-widget
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+    networks:
+      - ordeck-net
+
+  lazuros-api:
+    build:
+      context: ../../services/lazuros-api
+    container_name: ordeck-lazuros-api
+    restart: unless-stopped
+    network_mode: host
+    env_file: .env
+    volumes:
+      - /mnt/truenas/lazuros-data:/data
+
+networks:
+  ordeck-net:
+    external: true

@@ -1,0 +1,27 @@
+services:
+  recipe-widget:
+    build:
+      context: ../../
+      dockerfile: docker/recipe/Dockerfile.widget
+    container_name: ordeck-recipe-widget
+    restart: unless-stopped
+    ports:
+      - "3004:80"
+    networks:
+      - ordeck-net
+
+  recipe-api:
+    build:
+      context: ../../services/recipe-api
+    container_name: ordeck-recipe-api
+    restart: unless-stopped
+    ports:
+      - "8004:8004"
+    volumes:
+      - /mnt/truenas/recipe-data:/data
+    networks:
+      - ordeck-net
+
+networks:
+  ordeck-net:
+    external: true

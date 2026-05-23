@@ -1,0 +1,62 @@
+/* Shell global -- @hub/ui tokens are the single source of truth */
+@import '@hub/ui/tokens.css';
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--hub-bg-0);
+  color: var(--hub-cream);
+  font-family: var(--hub-font-mono);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(255,176,0,0.012) 0px,
+    rgba(255,176,0,0.012) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.45) 100%);
+  pointer-events: none;
+  z-index: 9998;
+}
+
+button { font: inherit; background: none; color: inherit; cursor: pointer; }
+input, textarea { font-family: var(--hub-font-mono); color: var(--hub-cream); }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--hub-bg-1); }
+::-webkit-scrollbar-thumb { background: var(--hub-line-strong); }
+
+.led {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 6px currentColor;
+  animation: led-pulse 2.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+.led.green { background: var(--hub-green); color: var(--hub-green); }
+.led.amber { background: var(--hub-amber); color: var(--hub-amber); }
+.led.red   { background: var(--hub-red);   color: var(--hub-red);   animation-duration: 1s; }
+.led.off   { background: var(--hub-bg-3);  color: var(--hub-bg-3);  box-shadow: none; animation: none; }
+
+@keyframes led-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes blink { 50% { opacity: 0; } }

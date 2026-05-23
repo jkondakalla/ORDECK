@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@hub/lazuros": ["../../../LazurOS/widget/index.tsx"],
+      "@hub/ui": ["../../packages/ui/src/index.ts"],
+      "@hub/ui/*": ["../../packages/ui/src/*"],
+      "@hub/types": ["../../packages/types/src/index.ts"]
+    }
+  },
+  "include": ["src", "../../../LazurOS/widget"]
+}
