@@ -60,10 +60,20 @@ export default defineConfig(({ mode }) => {
           cookieDomainRewrite: 'localhost',
         },
         // Dev proxy: routes data APIs → their respective services
-        '/api/plex':       { target: 'http://localhost:8001', changeOrigin: true },
-        '/api/recipes':    { target: 'http://localhost:8002', changeOrigin: true },
-        '/api/lazuros':    { target: 'http://localhost:8003', changeOrigin: true },
-        '/api/beigeboard': { target: 'http://localhost:3001', changeOrigin: true },
+        // LazurOS and BeigeBoard need prefix stripping — their routes don't
+        // include the /api/lazuros/ or /api/beigeboard/ prefix internally.
+        '/api/lazuros': {
+          target:      'http://localhost:8080',
+          changeOrigin: true,
+          rewrite:     (path: string) => path.replace(/^\/api\/lazuros/, ''),
+        },
+        '/api/beigeboard': {
+          target:      'http://localhost:3001',
+          changeOrigin: true,
+          rewrite:     (path: string) => path.replace(/^\/api\/beigeboard/, ''),
+        },
+        '/api/plex':    { target: 'http://localhost:8001', changeOrigin: true },
+        '/api/recipes': { target: 'http://localhost:8002', changeOrigin: true },
       },
     },
     build: {

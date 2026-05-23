@@ -4,6 +4,7 @@ import { Led, Screw, Vent, LabelTape } from '../hardware';
 import type { Settings } from './types';
 import { PHOSPHOR_GROUPS, STYLES, SHELLS } from './data';
 import { SessionsPanel } from './SessionsPanel';
+import { TokensPanel } from './TokensPanel';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -13,7 +14,13 @@ interface SettingsPanelProps {
   reset: () => void;
 }
 
-type Tab = 'config' | 'sessions';
+type Tab = 'config' | 'sessions' | 'tokens';
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'config',   label: 'AESTHETICS' },
+  { id: 'sessions', label: 'SESSIONS'   },
+  { id: 'tokens',   label: 'API TOKENS' },
+];
 
 export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsPanelProps) {
   const [tab, setTab] = useState<Tab>('config');
@@ -63,7 +70,9 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
             fontWeight: 700,
             letterSpacing: '0.18em',
             fontFamily: 'var(--hub-font-seg)',
-          }} className="glow-dim">{tab === 'config' ? 'CONFIG · AESTHETICS' : 'CONFIG · SESSIONS'}</span>
+          }} className="glow-dim">
+            {tab === 'config' ? 'CONFIG · AESTHETICS' : tab === 'sessions' ? 'CONFIG · SESSIONS' : 'CONFIG · API TOKENS'}
+          </span>
           <Vent slats={3} width={28} style={{ marginLeft: 'auto' }} />
           <button onClick={onClose} style={{
             width: 20,
@@ -87,21 +96,21 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
           borderBottom: '1px solid var(--hub-line-strong)',
           flexShrink: 0,
         }}>
-          {(['config', 'sessions'] as Tab[]).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
+          {TABS.map(({ id, label }) => (
+            <button key={id} onClick={() => setTab(id)} style={{
               flex: 1,
               padding: '9px 0',
-              background: tab === t ? 'var(--hub-bg-1)' : 'var(--hub-bg-2)',
+              background: tab === id ? 'var(--hub-bg-1)' : 'var(--hub-bg-2)',
               border: 'none',
-              borderBottom: tab === t ? '2px solid var(--hub-amber)' : '2px solid transparent',
-              color: tab === t ? 'var(--hub-amber)' : 'var(--hub-cream-faint)',
+              borderBottom: tab === id ? '2px solid var(--hub-amber)' : '2px solid transparent',
+              color: tab === id ? 'var(--hub-amber)' : 'var(--hub-cream-faint)',
               fontFamily: 'var(--hub-font-mono)',
-              fontSize: 9,
-              letterSpacing: '0.2em',
+              fontSize: 8,
+              letterSpacing: '0.15em',
               cursor: 'pointer',
               transition: 'all 0.12s',
             }}>
-              {t === 'config' ? 'AESTHETICS' : 'SESSIONS'}
+              {label}
             </button>
           ))}
         </div>
@@ -114,7 +123,9 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
           flexDirection: 'column',
           gap: 18,
         }}>
-          {tab === 'sessions' ? <SessionsPanel /> : (
+          {tab === 'sessions' ? <SessionsPanel /> :
+           tab === 'tokens'   ? <TokensPanel /> :
+           (
             <>
               <SettingsSection title="VISUAL STYLE" code="01">
                 <StyleGrid

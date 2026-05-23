@@ -57,6 +57,15 @@ db.exec(`
     user_agent   TEXT,
     ip_address   TEXT
   );
+
+  CREATE TABLE IF NOT EXISTS api_tokens (
+    id           TEXT PRIMARY KEY,
+    user_id      TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name         TEXT NOT NULL,
+    expires_at   INTEGER NOT NULL,
+    created_at   INTEGER NOT NULL DEFAULT (unixepoch()),
+    last_used_at INTEGER
+  );
 `);
 
 // Migrate existing DBs that lack the new columns
@@ -96,6 +105,20 @@ const stmts = {
   `),
   deleteSession:  db.prepare(`DELETE FROM refresh_tokens WHERE id = ? AND user_id = ?`),
   deleteOthers:   db.prepare(`DELETE FROM refresh_tokens WHERE user_id = ? AND id != ?`),
+
+  // API tokens
+  insertApiToken: db.prepare(`
+    INSERT INTO api_tokens (id, user_id, name, expires_at)
+    VALUES (@id, @userId, @name, @expiresAt)
+  `),
+  listApiTokens:  db.prepare(`
+    SELECT id, name, expires_at, created_at, last_used_at
+    FROM api_tokens
+    WHERE user_id = ? AND expires_at > unixepoch()
+    ORDER BY created_at DESC
+  `),
+  deleteApiToken: db.prepare(`DELETE FROM api_tokens WHERE id = ? AND user_id = ?`),
+  touchApiToken:  db.prepare(`UPDATE api_tokens SET last_used_at = unixepoch() WHERE id = ?`),
 };
 
 // ─── Token helpers ─────────────────────────────────────────────────────────────
@@ -355,6 +378,60 @@ app.delete('/api/auth/sessions', requireAuth, (req, res) => {
   const currentRefreshId = req.cookies.ordeck_refresh || '';
   const { changes } = stmts.deleteOthers.run(req.user.sub, currentRefreshId);
   res.json({ ok: true, revoked: changes });
+});
+
+// ─── POST /api/auth/tokens ── create a named API token ───────────────────────
+// API tokens are long-lived JWTs intended for CLI tools and scripts on Linux
+// machines. They carry a type:'api-token' claim so services can distinguish
+// them from short-lived browser access tokens if needed.
+
+app.post('/api/auth/tokens', requireAuth, (req, res) => {
+  const { name, expiresInDays = 90 } = req.body;
+  if (!name || !String(name).trim()) {
+    return res.status(400).json({ error: 'name is required' });
+  }
+  const days = Math.max(1, Math.min(365, parseInt(expiresInDays, 10) || 90));
+  const id        = crypto.randomUUID();
+  const expiresAt = Math.floor(Date.now() / 1000) + days * 86400;
+  const name_     = String(name).trim().slice(0, 64);
+
+  const token = jwt.sign(
+    { sub: req.user.sub, email: req.user.email, name: req.user.name, type: 'api-token', jti: id },
+    JWT_SECRET,
+    { expiresIn: days * 86400, issuer: 'ordeck-auth' }
+  );
+
+  stmts.insertApiToken.run({ id, userId: req.user.sub, name: name_, expiresAt });
+
+  // Token string is only returned on creation — copy it now
+  res.status(201).json({
+    id,
+    name:      name_,
+    token,     // shown once — not stored in plaintext
+    expiresAt,
+    createdAt: Math.floor(Date.now() / 1000),
+  });
+});
+
+// ─── GET /api/auth/tokens ── list API tokens ──────────────────────────────────
+
+app.get('/api/auth/tokens', requireAuth, (req, res) => {
+  const tokens = stmts.listApiTokens.all(req.user.sub);
+  res.json(tokens.map(t => ({
+    id:          t.id,
+    name:        t.name,
+    expiresAt:   t.expires_at,
+    createdAt:   t.created_at,
+    lastUsedAt:  t.last_used_at,
+  })));
+});
+
+// ─── DELETE /api/auth/tokens/:id ── revoke an API token ──────────────────────
+
+app.delete('/api/auth/tokens/:id', requireAuth, (req, res) => {
+  const { changes } = stmts.deleteApiToken.run(req.params.id, req.user.sub);
+  if (!changes) return res.status(404).json({ error: 'Token not found' });
+  res.json({ ok: true });
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────
