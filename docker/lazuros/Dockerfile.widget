@@ -4,11 +4,11 @@ WORKDIR /repo
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json tsconfig.base.json ./
 COPY packages/ ./packages/
-COPY apps/lazuros-widget/ ./apps/lazuros-widget/
+COPY widgets/lazuros/ ./widgets/lazuros/
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @jkhub/lazuros-widget build
+RUN pnpm --filter @ordeck/lazuros-widget build
 
 FROM nginx:alpine
-COPY --from=builder /repo/apps/lazuros-widget/dist /usr/share/nginx/html
+COPY --from=builder /repo/widgets/lazuros/dist /usr/share/nginx/html
 EXPOSE 80

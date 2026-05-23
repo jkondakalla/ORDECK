@@ -4,11 +4,11 @@ WORKDIR /repo
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json tsconfig.base.json ./
 COPY packages/ ./packages/
-COPY apps/plex-widget/ ./apps/plex-widget/
+COPY widgets/plex/ ./widgets/plex/
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @jkhub/plex-widget build
+RUN pnpm --filter @ordeck/plex-widget build
 
 FROM nginx:alpine
-COPY --from=builder /repo/apps/plex-widget/dist /usr/share/nginx/html
+COPY --from=builder /repo/widgets/plex/dist /usr/share/nginx/html
 EXPOSE 80
