@@ -8,6 +8,7 @@ import BusStrip from '../components/BusStrip';
 import RightRail from '../components/RightRail';
 import { useSettings, SettingsPanel } from '../components/settings';
 import { ContextSystem, ContextState } from '../components/ContextMenu';
+import AiPanel from '../components/AiPanel';
 
 // Core widgets
 import ClockWidget from '../widgets/core/ClockWidget';
@@ -269,6 +270,7 @@ export default function Dashboard() {
   });
   const [settings, setSetting, resetSettings] = useSettings();
   const [configOpen, setConfigOpen] = useState(false);
+  const [aiOpen, setAiOpen]         = useState(false);
   const [contextState, setContextState] = useState<ContextState | null>(null);
 
   useEffect(() => { saveLayout(state); }, [state]);
@@ -366,6 +368,8 @@ export default function Dashboard() {
         widgetCount={state.widgets.length}
         onOpenConfig={() => setConfigOpen(o => !o)}
         configOpen={configOpen}
+        onOpenAI={() => setAiOpen(o => !o)}
+        aiOpen={aiOpen}
       />
 
       {settings.showBus && <BusStrip />}
@@ -425,6 +429,8 @@ export default function Dashboard() {
         set={setSetting}
         reset={resetSettings}
       />
+
+      <AiPanel open={aiOpen} onClose={() => setAiOpen(false)} />
     </>
   );
 }

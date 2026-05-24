@@ -30,6 +30,8 @@ interface HeaderProps {
   alerts?: number;
   onOpenConfig?: () => void;
   configOpen?: boolean;
+  onOpenAI?: () => void;
+  aiOpen?: boolean;
 }
 
 export default function Header({
@@ -39,6 +41,8 @@ export default function Header({
   alerts = 0,
   onOpenConfig,
   configOpen = false,
+  onOpenAI,
+  aiOpen = false,
 }: HeaderProps) {
   const utc = useUTCClock();
   const count = widgetCount ?? pluginCount;
@@ -146,6 +150,22 @@ export default function Header({
             fontFamily: 'var(--hub-font-seg)',
           }} className="glow">{utc || '00:00:00'}</span>
         </div>
+        {onOpenAI && (
+          <button
+            onClick={onOpenAI}
+            title="AI Console"
+            style={{
+              background: aiOpen ? 'color-mix(in srgb, var(--hub-amber) 15%, transparent)' : 'transparent',
+              border: `1px solid ${aiOpen ? 'var(--hub-amber-dim)' : 'var(--hub-line)'}`,
+              color: aiOpen ? 'var(--hub-amber)' : 'var(--hub-cream-dim)',
+              fontFamily: 'var(--hub-font-mono)',
+              fontSize: 14, width: 32, height: 32,
+              cursor: 'pointer', display: 'grid', placeItems: 'center',
+              boxShadow: aiOpen ? '0 0 8px var(--hub-amber-glow)' : 'none',
+              transition: 'all 0.15s',
+            }}
+          >◎</button>
+        )}
         {onOpenConfig && (
           <ConfigButton open={configOpen} onClick={onOpenConfig} />
         )}
