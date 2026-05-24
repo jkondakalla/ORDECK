@@ -8,7 +8,7 @@ COPY packages/ ./packages/
 COPY apps/shell/ ./apps/shell/
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @jkhub/shell build
+RUN pnpm --filter @ordeck/shell build
 
 FROM nginx:alpine
 COPY --from=builder /repo/apps/shell/dist /usr/share/nginx/html

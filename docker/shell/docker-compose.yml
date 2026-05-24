@@ -1,8 +1,8 @@
 services:
   shell:
     build:
-      context: ../../apps/shell
-      dockerfile: ../../docker/shell/Dockerfile
+      context: ../..
+      dockerfile: docker/shell/Dockerfile
     container_name: ordeck-shell
     restart: unless-stopped
     ports:
