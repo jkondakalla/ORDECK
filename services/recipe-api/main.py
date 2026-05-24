@@ -17,7 +17,7 @@ from pydantic import BaseModel
 from auth import CurrentUser
 
 SHELL_URL             = os.getenv("SHELL_URL",             "http://localhost:3000")
-LAZUROS_URL           = os.getenv("LAZUROS_URL",           "http://ordeck-lazuros:8003").rstrip("/")
+LAZUROS_URL           = os.getenv("LAZUROS_URL",           "http://localhost:8080").rstrip("/")
 LAZUROS_TOKEN         = os.getenv("LAZUROS_TOKEN",         "")
 LAZUROS_DEFAULT_MODEL = os.getenv("LAZUROS_DEFAULT_MODEL", "llama3.2")
 

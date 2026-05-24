@@ -1,4 +1,4 @@
-# Assumes Hub/ layout: ../../../BeigeBoard/backend relative to this file
+# Assumes Hub/ layout: ORDECK/ and BeigeBoard/ are siblings
 services:
   beigeboard-plugin:
     build:
@@ -20,6 +20,7 @@ services:
       - "8003:8003"
     volumes:
       - /mnt/Luna/BeigeBoard-Data:/data
+    env_file: .env
     environment:
       - PORT=8003
       - DB_PATH=/data/beigeBoard.db
@@ -29,6 +30,11 @@ services:
       - MICROSOFT_CLIENT_ID=${MICROSOFT_CLIENT_ID}
       - MICROSOFT_CLIENT_SECRET=${MICROSOFT_CLIENT_SECRET}
       - MICROSOFT_REDIRECT_URI=${MICROSOFT_REDIRECT_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - SHELL_URL=${SHELL_URL}
+      - LAZUROS_URL=${LAZUROS_URL}
+      - LAZUROS_TOKEN=${LAZUROS_TOKEN}
+      - LAZUROS_DEFAULT_MODEL=${LAZUROS_DEFAULT_MODEL:-llama3.2}
     networks:
       - ordeck-net
 

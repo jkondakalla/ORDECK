@@ -12,6 +12,9 @@ services:
       - /mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.crt:/etc/nginx/ssl/YOUR_DOMAIN.crt:ro
       - /mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.key:/etc/nginx/ssl/YOUR_DOMAIN.key:ro
       - /mnt/YOUR_TRUENAS_POOL/nginx-logs:/var/log/nginx
+    # host-gateway lets nginx reach LazurOS which runs on the host network (required for WoL)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - ordeck-net
     # nginx should start after all app containers are up
