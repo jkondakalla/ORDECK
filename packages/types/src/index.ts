@@ -67,7 +67,8 @@ export type WidgetType =
   | 'plex'
   | 'lazuros'
   | 'beigeboard'
-  | 'recipe';
+  | 'recipe'
+  | 'opencourseflow';
 
 export interface HubUser {
   name: string;

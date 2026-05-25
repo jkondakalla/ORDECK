@@ -24,3 +24,9 @@ declare module 'recipe-plugin/Widget' {
   const Widget: ComponentType;
   export default Widget;
 }
+
+declare module 'opencourseflow-plugin/Widget' {
+  import { ComponentType } from 'react';
+  const Widget: ComponentType;
+  export default Widget;
+}

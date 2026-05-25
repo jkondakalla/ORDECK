@@ -3,6 +3,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "react": ["node_modules/@types/react/index.d.ts"],
+      "react/jsx-runtime": ["node_modules/@types/react/jsx-runtime.d.ts"],
+      "react/jsx-dev-runtime": ["node_modules/@types/react/jsx-dev-runtime.d.ts"],
       "@hub/lazuros": ["../../../LazurOS/widget/index.tsx"],
       "@hub/ui": ["../../packages/ui/src/index.ts"],
       "@hub/ui/*": ["../../packages/ui/src/*"],

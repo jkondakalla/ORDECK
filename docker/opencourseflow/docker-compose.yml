@@ -1,0 +1,41 @@
+# Assumes Hub/ layout: ORDECK/ and OpenCourseFlow/ are siblings
+services:
+  opencourseflow-plugin:
+    build:
+      context: ../../
+      dockerfile: docker/opencourseflow/Dockerfile.plugin
+    container_name: ordeck-opencourseflow-plugin
+    restart: unless-stopped
+    ports:
+      - "3005:80"
+    networks:
+      - ordeck-net
+
+  opencourseflow-api:
+    build:
+      context: ../../../OpenCourseFlow/backend
+    container_name: ordeck-opencourseflow-api
+    restart: unless-stopped
+    ports:
+      - "8004:8004"
+    volumes:
+      - /mnt/Luna/OpenCourseFlow-Data:/data
+    env_file: .env
+    environment:
+      - PORT=8004
+      - DB_PATH=/data/opencourseflow.db
+      - JWT_SECRET=${JWT_SECRET}
+      - NIGHTLY_CRON=${NIGHTLY_CRON:-0 2 * * *}
+      - AI_PROVIDER=${AI_PROVIDER:-ollama}
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama3.2}
+      - LAZUROS_URL=${LAZUROS_URL:-http://host.docker.internal:8080}
+      - LAZUROS_TOKEN=${LAZUROS_TOKEN:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - ordeck-net
+
+networks:
+  ordeck-net:
+    external: true
