@@ -24,7 +24,6 @@ services:
     environment:
       - PORT=8004
       - DB_PATH=/data/opencourseflow.db
-      - JWT_SECRET=${JWT_SECRET}
       - NIGHTLY_CRON=${NIGHTLY_CRON:-0 2 * * *}
       - AI_PROVIDER=${AI_PROVIDER:-ollama}
       - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}

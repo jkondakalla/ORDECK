@@ -99,7 +99,7 @@ All three must use the **same value**.
 All backend services validate `jkos_token` cookies using the RSA public key from jkOS Auth:
 
 ```bash
-cat /media/jag/The\ Forge/Hub/jkos-auth/.env | grep JKOS_AUTH_PUBLIC_KEY
+cat /mnt/Luna/Webhost/jkOS/jkos-auth/.env | grep JKOS_AUTH_PUBLIC_KEY
 ```
 
 Copy the full value (everything after `JKOS_AUTH_PUBLIC_KEY=`). Paste it into every service

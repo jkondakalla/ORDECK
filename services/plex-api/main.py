@@ -1,7 +1,7 @@
 """Plex API — jkHUB service.
 
 Requires env vars:
-  JWT_SECRET            — same value as auth service
+  JKOS_AUTH_PUBLIC_KEY  — RSA public key from jkos-auth (copy from jkos-auth/.env)
   SHELL_URL             — e.g. https://YOUR_DOMAIN
   LAZUROS_URL           — e.g. http://ordeck-lazuros:8003
   LAZUROS_TOKEN         — API token from ORDECK Settings → API Tokens
