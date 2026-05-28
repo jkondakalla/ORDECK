@@ -19,7 +19,7 @@ services:
     ports:
       - "8003:8003"
     volumes:
-      - /mnt/Luna/BeigeBoard-Data:/data
+      - /mnt/Luna/Backends/BeigeBoard-Data:/data
     env_file: .env
     environment:
       - PORT=8003

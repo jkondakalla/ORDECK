@@ -19,7 +19,7 @@ services:
     ports:
       - "8004:8004"
     volumes:
-      - /mnt/Luna/OpenCourseFlow-Data:/data
+      - /mnt/Luna/Backends/SylibOS-Data:/data
     env_file: .env
     environment:
       - PORT=8004
