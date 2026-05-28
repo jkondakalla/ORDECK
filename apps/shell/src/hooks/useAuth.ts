@@ -1,12 +1,18 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
 
+const JKOS_AUTH_URL = (import.meta.env.VITE_JKOS_AUTH_URL as string | undefined)
+  ?? 'https://auth.jkos.net';
+const APP_ORIGIN = (import.meta.env.VITE_APP_ORIGIN as string | undefined)
+  ?? 'https://jkos.net';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface AuthUser {
-  id:      string;
-  email:   string;
-  name:    string;
-  picture: string;
+  id:         string;
+  email:      string;
+  name:       string;
+  avatar_url: string | null;
+  role:       string;
 }
 
 export type AuthState =
@@ -24,8 +30,10 @@ export interface AuthContext {
 
 export const authContext = createContext<AuthContext>({
   state:           { status: 'loading' },
-  loginWithGoogle: () => { window.location.href = '/api/auth/google'; },
-  logout:          async () => { /* noop */ },
+  loginWithGoogle: () => {
+    window.location.href = `${JKOS_AUTH_URL}/auth/login?redirect_to=${encodeURIComponent(APP_ORIGIN)}`;
+  },
+  logout: async () => { /* noop */ },
 });
 
 export function useAuth(): AuthContext {
@@ -38,17 +46,17 @@ export function useAuthProvider(): AuthContext {
   const [state, setState] = useState<AuthState>({ status: 'loading' });
 
   const fetchMe = useCallback(async (): Promise<boolean> => {
-    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    const res = await fetch(`${JKOS_AUTH_URL}/auth/me`, { credentials: 'include' });
     if (res.ok) {
-      const user: AuthUser = await res.json();
-      setState({ status: 'authenticated', user });
+      const data = await res.json();
+      setState({ status: 'authenticated', user: data.user as AuthUser });
       return true;
     }
     return false;
   }, []);
 
   const refresh = useCallback(async (): Promise<boolean> => {
-    const res = await fetch('/api/auth/refresh', {
+    const res = await fetch(`${JKOS_AUTH_URL}/auth/refresh`, {
       method:      'POST',
       credentials: 'include',
     });
@@ -60,14 +68,12 @@ export function useAuthProvider(): AuthContext {
       const ok = await fetchMe();
       if (ok) return;
 
-      // Access token expired — try rotating the refresh token
       const refreshed = await refresh();
       if (refreshed) {
         const retried = await fetchMe();
         if (retried) return;
       }
 
-      // Pull ?error= param from URL (set by auth service on redirect)
       const params = new URLSearchParams(window.location.search);
       const error  = params.get('error') ?? undefined;
       setState({ status: 'unauthenticated', error });
@@ -81,17 +87,18 @@ export function useAuthProvider(): AuthContext {
   }, [check]);
 
   const loginWithGoogle = useCallback(() => {
-    window.location.href = '/api/auth/google';
+    window.location.href =
+      `${JKOS_AUTH_URL}/auth/login?redirect_to=${encodeURIComponent(APP_ORIGIN)}`;
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/session', {
-        method:      'DELETE',
+      await fetch(`${JKOS_AUTH_URL}/auth/logout`, {
+        method:      'POST',
         credentials: 'include',
       });
     } finally {
-      setState({ status: 'unauthenticated' });
+      window.location.href = JKOS_AUTH_URL;
     }
   }, []);
 

@@ -53,10 +53,12 @@ export default defineConfig(({ mode }) => {
     server: {
       port: 3000,
       proxy: {
-        // Dev proxy: routes /api/auth/* → auth service so httpOnly cookies
-        // land on localhost:3000 (same origin as the shell)
-        '/api/auth': {
-          target:              'http://localhost:8000',
+        // Dev proxy: routes /auth/* → jkos-auth (port 3100) so httpOnly cookies
+        // land on localhost:3000 (same origin as the shell).
+        // Set VITE_JKOS_AUTH_URL=http://localhost:3000 in .env.local so the
+        // frontend sends auth calls through this proxy during development.
+        '/auth': {
+          target:              'http://localhost:3100',
           changeOrigin:        true,
           cookieDomainRewrite: 'localhost',
         },

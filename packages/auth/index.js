@@ -2,55 +2,29 @@
 
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || '';
-const ISSUER     = 'ordeck-auth';
+const PUBLIC_KEY = (process.env.JKOS_AUTH_PUBLIC_KEY || '').replace(/\\n/g, '\n');
 
 /**
- * Verify a JWT string.
- * Returns the decoded payload, or throws on failure.
- *
- * @param {string} token
- * @param {string} [secret]  - Defaults to JWT_SECRET env var
- * @returns {object}
+ * Verify a jkos_token JWT using the RSA public key.
+ * Returns decoded payload, or throws on failure.
  */
-function verifyToken(token, secret) {
-  const s = secret || JWT_SECRET;
-  if (!s) throw new Error('JWT_SECRET is not set');
-  return jwt.verify(token, s, { issuer: ISSUER });
+function verifyToken(token) {
+  if (!PUBLIC_KEY) throw new Error('JKOS_AUTH_PUBLIC_KEY is not set');
+  return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'], issuer: 'jkos-auth' });
 }
 
 /**
- * Express middleware that reads the JWT from the `ordeck_access` cookie
- * or the `Authorization: Bearer <token>` header.
- *
- * Attaches the decoded payload to `req.user`.
- * Responds 401 if the token is missing or invalid.
- *
- * @type {import('express').RequestHandler}
+ * Express middleware. Reads jkos_token cookie, verifies RS256, sets req.user.
+ * Replaces the old JWT_SECRET / ordeck_access approach.
  */
 function requireAuth(req, res, next) {
-  let token = null;
-
-  // Prefer cookie
-  if (req.cookies && req.cookies.ordeck_access) {
-    token = req.cookies.ordeck_access;
-  }
-
-  // Fallback to Bearer header
-  if (!token) {
-    const auth = req.headers['authorization'] || '';
-    if (auth.startsWith('Bearer ')) token = auth.slice(7);
-  }
-
-  if (!token) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-
+  const token = req.cookies?.jkos_token;
+  if (!token) return res.status(401).json({ error: 'Authentication required' });
   try {
     req.user = verifyToken(token);
     next();
   } catch {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    res.status(401).json({ error: 'Invalid or expired token' });
   }
 }
 

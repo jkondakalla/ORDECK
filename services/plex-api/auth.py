@@ -1,29 +1,21 @@
 import os
-import jwt
-from fastapi import Depends, HTTPException, Cookie, Header
+from fastapi import Depends, HTTPException, Request
+from jose import jwt, JWTError
 from typing import Annotated
 
-JWT_SECRET = os.getenv("JWT_SECRET", "")
+PUBLIC_KEY = os.getenv("JKOS_AUTH_PUBLIC_KEY", "").replace("\\n", "\n")
 
 
-def get_current_user(
-    ordeck_access: Annotated[str | None, Cookie()] = None,
-    authorization: Annotated[str | None, Header()] = None,
-) -> dict:
-    token = ordeck_access
-    if not token and authorization and authorization.startswith("Bearer "):
-        token = authorization[7:]
-    if not token or not JWT_SECRET:
+async def require_user(request: Request) -> dict:
+    token = request.cookies.get("jkos_token")
+    if not token:
         raise HTTPException(status_code=401, detail="Authentication required")
+    if not PUBLIC_KEY:
+        raise HTTPException(status_code=500, detail="JKOS_AUTH_PUBLIC_KEY is not set")
     try:
-        return jwt.decode(
-            token,
-            JWT_SECRET,
-            algorithms=["HS256"],
-            issuer="ordeck-auth",
-        )
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
+        return jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"], issuer="jkos-auth")
+    except JWTError as e:
+        raise HTTPException(status_code=401, detail=str(e))
 
 
-CurrentUser = Annotated[dict, Depends(get_current_user)]
+CurrentUser = Annotated[dict, Depends(require_user)]
