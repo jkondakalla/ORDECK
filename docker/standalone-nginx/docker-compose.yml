@@ -1,10 +1,11 @@
-# Standalone nginx — reverse proxy for beigeboard.jkos.net and sylibos.jkos.net
+# Standalone nginx — reverse proxy for beigeboard.jkos.net, auth.jkos.net, sylibos.jkos.net
 #
-# Joins bb-net and sylibos-net as EXTERNAL networks, so BeigeBoard and SylibOS
-# must be started before this container:
+# Joins bb-net, sylibos-net, jkos-auth-net as EXTERNAL networks.
+# Start dependent services first:
 #
+#   cd jkos-auth      && docker compose up -d --build
 #   cd BeigeBoard     && docker compose up -d --build
-#   cd OpenCourseFlow && docker compose up -d --build   # dir still named OpenCourseFlow/ on disk
+#   cd OpenCourseFlow && docker compose up -d --build
 #   cd docker/nginx   && docker compose up -d
 
 services:
@@ -22,6 +23,7 @@ services:
     networks:
       - bb-net
       - sylibos-net
+      - jkos-auth-net
 
 networks:
   bb-net:
@@ -30,3 +32,6 @@ networks:
   sylibos-net:
     external: true
     name: sylibos-net
+  jkos-auth-net:
+    external: true
+    name: jkos-auth-net
