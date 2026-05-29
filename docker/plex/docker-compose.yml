@@ -18,8 +18,8 @@ services:
     ports:
       - "8001:8001"
     env_file: .env
-    volumes:
-      - /mnt/truenas/plex-data:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - ordeck-net
 

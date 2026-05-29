@@ -34,6 +34,8 @@ services:
       - LAZUROS_URL=${LAZUROS_URL}
       - LAZUROS_TOKEN=${LAZUROS_TOKEN}
       - LAZUROS_DEFAULT_MODEL=${LAZUROS_DEFAULT_MODEL:-llama3.2}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - ordeck-net
 

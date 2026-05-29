@@ -66,18 +66,23 @@ async def suggest(body: SuggestRequest, _user: CurrentUser) -> dict:
     if not body.mood.strip():
         raise HTTPException(400, "mood is required")
 
-    reply = await _ai_chat(
-        messages=[
-            {
-                "role": "system",
-                "content": (
-                    "You are a movie and TV show recommendation expert. "
-                    "Suggest 3-5 titles based on the user's mood, genre, or activity. "
-                    "Format as a compact list: title — one-line reason. No intro text."
-                ),
-            },
-            {"role": "user", "content": body.mood.strip()},
-        ],
-        model=body.model,
-    )
+    try:
+        reply = await _ai_chat(
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "You are a movie and TV show recommendation expert. "
+                        "Suggest 3-5 titles based on the user's mood, genre, or activity. "
+                        "Format as a compact list: title — one-line reason. No intro text."
+                    ),
+                },
+                {"role": "user", "content": body.mood.strip()},
+            ],
+            model=body.model,
+        )
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(502, f"AI service returned {e.response.status_code}")
+    except httpx.RequestError:
+        raise HTTPException(503, "AI service unavailable")
     return {"suggestions": reply}

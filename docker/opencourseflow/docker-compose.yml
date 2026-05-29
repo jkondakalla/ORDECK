@@ -23,7 +23,8 @@ services:
     env_file: .env
     environment:
       - PORT=8004
-      - DB_PATH=/data/opencourseflow.db
+      - DB_PATH=/data/sylibos.db
+      - SHELL_URL=${SHELL_URL:-https://jkos.net}
       - NIGHTLY_CRON=${NIGHTLY_CRON:-0 2 * * *}
       - AI_PROVIDER=${AI_PROVIDER:-ollama}
       - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
