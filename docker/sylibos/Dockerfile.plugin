@@ -4,11 +4,11 @@ WORKDIR /repo
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml* turbo.json tsconfig.base.json ./
 COPY packages/ ./packages/
-COPY plugins/opencourseflow/ ./plugins/opencourseflow/
+COPY plugins/sylibos/ ./plugins/sylibos/
 
 RUN pnpm install --frozen-lockfile
-RUN pnpm --filter @ordeck/opencourseflow-plugin build
+RUN pnpm --filter @ordeck/sylibos-plugin build
 
 FROM nginx:alpine
-COPY --from=builder /repo/plugins/opencourseflow/dist /usr/share/nginx/html
+COPY --from=builder /repo/plugins/sylibos/dist /usr/share/nginx/html
 EXPOSE 80

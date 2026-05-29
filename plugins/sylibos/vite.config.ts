@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'opencourseflow-plugin',
+      name: 'sylibos-plugin',
       filename: 'remoteEntry.js',
       exposes: { './Widget': './src/Widget' },
       shared: {

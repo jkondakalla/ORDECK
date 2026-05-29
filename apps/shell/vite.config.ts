@@ -13,7 +13,7 @@ const DEV_PORTS: Record<string, number> = {
   'lazuros-plugin':         3002,
   'beigeboard-plugin':      3003,
   'recipe-plugin':          3004,
-  'opencourseflow-plugin':  3005,
+  'sylibos-plugin':         3005,
 };
 
 export default defineConfig(({ mode }) => {
@@ -77,8 +77,8 @@ export default defineConfig(({ mode }) => {
         },
         '/api/plex':            { target: 'http://localhost:8001', changeOrigin: true },
         '/api/recipes':         { target: 'http://localhost:8002', changeOrigin: true },
-        '/api/opencourseflow':  { target: 'http://localhost:8004', changeOrigin: true,
-                                  rewrite: (path: string) => path.replace(/^\/api\/opencourseflow/, '') },
+        '/api/sylibos':  { target: 'http://localhost:8004', changeOrigin: true,
+                           rewrite: (path: string) => path.replace(/^\/api\/sylibos/, '') },
       },
     },
     build: {

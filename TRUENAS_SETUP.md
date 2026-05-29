@@ -1,12 +1,13 @@
 # jkHUB · Standalone Subdomain Deployment Guide
 
 **Platform:** TrueNAS SCALE 25.04+  
-**Last updated:** 2026-05-25  
+**Last updated:** 2026-05-29  
 **Status:** Infrastructure complete and committed — fill secrets, then follow steps
 
 This guide covers the **standalone** deployment:
+- `https://auth.jkos.net`       — jkOS Auth (SSO, deploy first)
 - `https://beigeboard.jkos.net` — BeigeBoard calendar + task manager
-- `https://sylibos.jkos.net` — SylibOS MIT OCW course scheduler
+- `https://sylibos.jkos.net`    — SylibOS MIT OCW course scheduler
 
 For the unified ORDECK portal (all apps as widgets at one domain), see `ORDECK/docker/TRUENAS_SETUP.md`.
 
@@ -17,87 +18,126 @@ For the unified ORDECK portal (all apps as widgets at one domain), see `ORDECK/d
 | Item | Value |
 |------|-------|
 | TrueNAS pool | `Luna` |
+| Code location | `/mnt/Luna/Webhost/jkOS/` (Webhost dataset) |
+| Data volumes | `/mnt/Luna/Backends/` (Backends dataset) |
 | Domain registrar | Cloudflare |
-| Subdomains | `beigeboard.jkos.net`, `sylibos.jkos.net` |
-| SSL cert | Let's Encrypt SAN cert (covers both subdomains) |
-| Cert path | `/mnt/Luna/ssl/live/beigeboard.jkos.net/` |
-| BeigeBoard data | `/mnt/Luna/BeigeBoard-Data/` (already created) |
-| SylibOS data | `/mnt/Luna/sylibos-data/` |
-| GitHub org | `github.com/jkondakalla` |
+| Subdomains | `auth.jkos.net`, `beigeboard.jkos.net`, `sylibos.jkos.net` |
+| SSL cert | Cloudflare Origin Certificate — wildcard `*.jkos.net` + apex `jkos.net`, 15-year validity |
+| Cert path | `/mnt/Luna/Backends/ssl/live/jkos.net/fullchain.pem` |
+| BeigeBoard data | `/mnt/Luna/Backends/BeigeBoard-Data/` (already exists) |
+| SylibOS data | `/mnt/Luna/Backends/SylibOS-Data/` (already exists) |
+| jkOS Auth data | `/mnt/Luna/Backends/jkos-auth-data/` (create in Step 0) |
 
 ---
 
 ## Step 0 — Prerequisites
 
 1. TrueNAS SCALE 25.04+ with Docker Compose available (Apps → Manage → Docker)
-2. Both subdomains pointed at your TrueNAS IP in Cloudflare DNS
-3. Certbot already ran — `/mnt/Luna/ssl/live/beigeboard.jkos.net/fullchain.pem` exists
-4. Data directories exist:
-   ```bash
-   ls /mnt/Luna/BeigeBoard-Data/      # already created
-   mkdir -p /mnt/Luna/sylibos-data    # create this
-   mkdir -p /mnt/Luna/nginx-standalone-logs
-   ```
+2. All subdomains pointed at your TrueNAS IP in Cloudflare DNS
+3. Cloudflare Origin Certificate placed at the correct path (see Step 2)
+4. Missing data directories created (run on TrueNAS shell):
+
+```bash
+mkdir -p /mnt/Luna/Backends/jkos-auth-data
+mkdir -p /mnt/Luna/Backends/ssl/live/jkos.net
+mkdir -p /mnt/Luna/Backends/nginx-standalone-logs
+mkdir -p /mnt/Luna/Backends/nginx-ordeck-logs
+```
 
 ---
 
-## Step 1 — Clone repositories
+## Step 1 — Code location
 
-```bash
-mkdir -p /mnt/Luna/hub && cd /mnt/Luna/hub
+Code already lives on TrueNAS at:
 
-git clone https://github.com/jkondakalla/ORDECK.git
-git clone https://github.com/jkondakalla/BeigeBoard.git
-git clone https://github.com/jkondakalla/LazurOS.git
-git clone https://github.com/jkondakalla/OpenCourseFlow.git
 ```
-
-Expected layout:
-```
-/mnt/Luna/hub/
-├── ORDECK/
+/mnt/Luna/Webhost/jkOS/
+├── SylibOS/
 ├── BeigeBoard/
 ├── LazurOS/
-└── OpenCourseFlow/    ← SylibOS lives here on disk
+└── ORDECK/
 ```
 
----
-
-## Step 2 — Generate shared secrets
-
-All services that share JWT sessions need the same secret.
+To pull latest from this dev machine or GitHub:
 
 ```bash
-# JWT secret (shared across BeigeBoard, SylibOS, and LazurOS)
-openssl rand -hex 64
-# Save this output — paste into every .env file below as JWT_SECRET
+BASE=/mnt/Luna/Webhost/jkOS
+git -C $BASE/BeigeBoard pull
+git -C $BASE/SylibOS pull
+git -C $BASE/LazurOS pull
+git -C $BASE/ORDECK pull
 ```
 
 ---
 
-## Step 3 — Google OAuth2 (for BeigeBoard calendar sync)
+## Step 2 — SSL Certificate
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com) → APIs & Services → Credentials
-2. Create OAuth 2.0 Client ID → Web application
-3. Add **Authorized redirect URIs**:
-   - `https://beigeboard.jkos.net/api/auth/google/callback`
-4. Copy the **Client ID** and **Client Secret**
+Place the Cloudflare Origin Certificate files at:
+
+```
+/mnt/Luna/Backends/ssl/live/jkos.net/fullchain.pem
+/mnt/Luna/Backends/ssl/live/jkos.net/privkey.pem
+```
+
+The wildcard cert (`*.jkos.net`) covers `auth.jkos.net`, `beigeboard.jkos.net`, and
+`sylibos.jkos.net` automatically — no per-subdomain cert needed.
+
+The standalone nginx mounts `/mnt/Luna/Backends/ssl → /etc/letsencrypt` (read-only).
+The nginx config reads certs from `/etc/letsencrypt/live/jkos.net/{fullchain,privkey}.pem`.
+No certbot or renewal cron needed for Cloudflare Origin certs (15-year validity).
+
+---
+
+## Step 3 — Deploy jkOS Auth (first — all other services depend on it)
+
+jkOS Auth is the SSO service. It issues `jkos_token` RS256 JWT cookies scoped to `.jkos.net`.
+All backend services validate these locally — no round-trip to the auth server per request.
+
+```bash
+cd /mnt/Luna/Webhost/jkOS/jkos-auth
+cp .env.example .env && nano .env
+```
+
+Fill in:
+
+| Variable | Value |
+|----------|-------|
+| `PORT` | `3100` |
+| `DB_PATH` | `/data/jkos-auth.db` |
+| `SHELL_URL` | `https://auth.jkos.net` |
+| `JWT_ISSUER` | `jkos-auth` |
+| `ADMIN_SEED_EMAIL` | `jaaggruthkondakalla@gmail.com` |
+| `ADMIN_SEED_PASSWORD` | (strong password — first-run seed only) |
+| `GOOGLE_CLIENT_ID` | (from Google Cloud Console) |
+| `GOOGLE_CLIENT_SECRET` | (from Google Cloud Console) |
+| `GOOGLE_REDIRECT_URI` | `https://auth.jkos.net/auth/google/callback` |
+
+The RSA keypair is auto-generated on first boot. After first start, get the public key:
+
+```bash
+docker compose up -d --build
+docker logs jkos-auth 2>&1 | grep PUBLIC_KEY
+# OR:
+cat /mnt/Luna/Backends/jkos-auth-data/jkos-auth.db   # public key is stored in DB, also in .env after init
+```
+
+**After generating the keypair**, add `JKOS_AUTH_PUBLIC_KEY=` to the `.env` files for every
+other service (BeigeBoard, SylibOS). Copy the full RS256 public key value from `jkos-auth/.env`.
 
 ---
 
 ## Step 4 — LazurOS setup
 
-BeigeBoard's AI task parse calls LazurOS. Set up LazurOS first.
+BeigeBoard and SylibOS call LazurOS for AI tasks. Set up LazurOS first.
 
 ```bash
-cd /mnt/Luna/hub/LazurOS
-cp .env.example .env
-nano .env
+cd /mnt/Luna/Webhost/jkOS/LazurOS
+cp .env.example .env && nano .env
 ```
 
 | Variable | Value |
 |----------|-------|
-| `JWT_SECRET` | (from Step 2) |
+| `LAZUROS_TOKEN` | (generate: `openssl rand -hex 32`) |
 | `SHELL_URL` | `https://beigeboard.jkos.net` |
 | `ALLOWED_EMAILS` | `jaaggruthkondakalla@gmail.com` |
 | `COMPUTE_NODE_IP` | IP of your Linux desktop |
@@ -118,127 +158,101 @@ sudo ethtool -s YOUR_NIC wol g
 
 Start LazurOS:
 ```bash
-cd /mnt/Luna/hub/LazurOS
+cd /mnt/Luna/Webhost/jkOS/LazurOS
 docker compose up -d
-# Verify: curl http://localhost:8080/health
+curl http://localhost:8080/health
 ```
+
+Save the `LAZUROS_TOKEN` value — paste it into both BeigeBoard and SylibOS `.env` files as `LAZUROS_TOKEN`.
 
 ---
 
-## Step 5 — Generate LazurOS API token
-
-BeigeBoard and SylibOS backend both call LazurOS with a Bearer token.
+## Step 5 — BeigeBoard
 
 ```bash
-# With LazurOS running:
-node -e "const jwt=require('jsonwebtoken'); \
-  console.log(jwt.sign({sub:'service',iss:'ordeck-auth'}, 'YOUR_JWT_SECRET_HERE'))"
+cd /mnt/Luna/Webhost/jkOS/BeigeBoard
+cp .env.example .env && nano .env
 ```
-
-Save this token as `LAZUROS_TOKEN` in both `.env` files below.
-
----
-
-## Step 6 — BeigeBoard
-
-```bash
-cd /mnt/Luna/hub/BeigeBoard
-cp .env.example .env
-nano .env
-```
-
-Fill in:
 
 | Variable | Value |
 |----------|-------|
+| `JKOS_AUTH_PUBLIC_KEY` | (RS256 public key from Step 3) |
 | `SHELL_URL` | `https://beigeboard.jkos.net` |
-| `JWT_SECRET` | (from Step 2) |
-| `GOOGLE_CLIENT_ID` | (from Step 3) |
-| `GOOGLE_CLIENT_SECRET` | (from Step 3) |
+| `GOOGLE_CLIENT_ID` | (from Google Cloud Console — for calendar sync) |
+| `GOOGLE_CLIENT_SECRET` | (from Google Cloud Console) |
 | `GOOGLE_REDIRECT_URI` | `https://beigeboard.jkos.net/api/auth/google/callback` |
-| `MICROSOFT_CLIENT_ID` | (Azure portal — optional, for Outlook sync) |
-| `MICROSOFT_CLIENT_SECRET` | (Azure portal — optional) |
-| `MICROSOFT_REDIRECT_URI` | `https://beigeboard.jkos.net/api/auth/outlook/callback` |
 | `LAZUROS_URL` | `http://host.docker.internal:8080` |
-| `LAZUROS_TOKEN` | (from Step 5) |
+| `LAZUROS_TOKEN` | (from Step 4) |
 | `LAZUROS_DEFAULT_MODEL` | `llama3.2` |
 
 Build and start:
 ```bash
 docker compose up -d --build
-# Verify: curl http://localhost:3001/health  (or check docker logs bb-app)
+curl http://localhost:3001/health
 ```
 
 ---
 
-## Step 7 — SylibOS
+## Step 6 — SylibOS
 
 ```bash
-cd /mnt/Luna/hub/OpenCourseFlow
-cp .env.example .env
-nano .env
+cd /mnt/Luna/Webhost/jkOS/SylibOS
+cp .env.example .env && nano .env
 ```
-
-Fill in:
 
 | Variable | Value |
 |----------|-------|
-| `JWT_SECRET` | (from Step 2, or leave empty for open LAN access) |
+| `JKOS_AUTH_PUBLIC_KEY` | (RS256 public key from Step 3) |
+| `LIBRARY_DB_PATH` | `/data/library.db` |
 | `AI_PROVIDER` | `lazuros` |
 | `LAZUROS_URL` | `http://host.docker.internal:8080` |
-| `LAZUROS_TOKEN` | (from Step 5) |
-| `OLLAMA_MODEL` | `llama3.2` |
+| `LAZUROS_TOKEN` | (from Step 4) |
 | `NIGHTLY_CRON` | `0 2 * * *` |
 
 Build and start:
 ```bash
-mkdir -p /mnt/Luna/sylibos-data
 docker compose up -d --build
-# Verify: curl http://localhost:8004/health
+curl http://localhost:8004/health
 ```
 
-After the app is live, open `https://sylibos.jkos.net`, go to **Settings**, and set:
-- AI Provider: `lazuros`
-- LazurOS URL: `https://beigeboard.jkos.net/api/lazuros` (if routing through BB's nginx)
-  OR `http://YOUR_TRUENAS_IP:8080` (direct, LAN only)
-- API token: (the LAZUROS_TOKEN value)
-- Backend API URL: `https://sylibos.jkos.net`
+> **library.db note:** The API boots successfully even without `library.db` — it auto-seeds an
+> empty schema on first start. To add courses to the library, run the Python ingest pipeline:
+> ```bash
+> cd /mnt/Luna/Webhost/jkOS/SylibOS
+> python -m preprocessor.library_cli build COURSE.zip --course-number 18.01SC --term "Fall 2010"
+> python -m preprocessor.library_cli load ./build/18-01sc-fall-2010
+> ```
 
 ---
 
-## Step 8 — Standalone nginx
+## Step 7 — Standalone nginx
 
 ```bash
-cd /mnt/Luna/hub/ORDECK/docker/standalone-nginx
-mkdir -p /mnt/Luna/nginx-standalone-logs
+cd /mnt/Luna/Webhost/jkOS/Hub/docker/nginx
 docker compose up -d
 ```
 
-The compose file mounts `/mnt/Luna/ssl → /etc/letsencrypt` and joins both `bb-net` and `sylibos-net`. It is pre-configured for the correct cert paths and subdomain names — no edits needed.
+The compose file:
+- Mounts `/mnt/Luna/Backends/ssl → /etc/letsencrypt` (read-only)
+- Mounts `/mnt/Luna/Backends/nginx-standalone-logs → /var/log/nginx`
+- Joins `bb-net`, `sylibos-net`, and `jkos-auth-net` as external networks
+
+No config edits needed — certs and subdomain names are already configured.
 
 ---
 
-## Step 9 — Verify
+## Step 8 — Verify
 
 ```bash
 # All containers running:
 docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-# Expected: bb-app, sylibos-frontend, sylibos-api, standalone-nginx, ordeck-lazuros-api (host)
+# Expected: jkos-auth, bb-app, sylibos-frontend, sylibos-api, standalone-nginx, lazuros
 
 # Health checks:
+curl -s https://auth.jkos.net/health | jq .
 curl -s https://beigeboard.jkos.net/health | jq .
-# → {"status":"ok","service":"beigeboard"}
-
 curl -s https://sylibos.jkos.net/health | jq .
-# → {"status":"ok","service":"opencourseflow-api"}
-
-# BeigeBoard app loads:
-curl -s https://beigeboard.jkos.net/ -o /dev/null -w "%{http_code}"
-# → 200
-
-# SylibOS app loads:
-curl -s https://sylibos.jkos.net/ -o /dev/null -w "%{http_code}"
-# → 200
+# → {"status":"ok","service":"..."}
 ```
 
 ---
@@ -249,44 +263,40 @@ curl -s https://sylibos.jkos.net/ -o /dev/null -w "%{http_code}"
 Cloudflare DNS → TrueNAS SCALE host :80/:443
                           │
                  ┌────────▼────────┐
-                 │ standalone-nginx │
-                 │ (nginx:alpine)   │
-                 └───┬─────────┬───┘
-                     │         │
-           beigeboard │         │ sylibos
-            .jkos.net │         │ .jkos.net
-                     │         │
-          ┌──────────▼──┐  ┌───▼──────────────┐
-          │   bb-net    │  │   sylibos-net     │
-          │             │  │                   │
-          │  bb-app     │  │  sylibos-frontend │
-          │  :3001      │  │  :80 (nginx SPA)  │
-          │  (Express)  │  │                   │
-          └──────────┬──┘  │  sylibos-api      │
-                     │     │  :8004 (Node.js)  │
-                     │     └───────┬───────────┘
-                     │             │
-                     └──────┬──────┘
-                            │ host.docker.internal:8080
-                            ▼
-                   ┌────────────────┐
-                   │  LazurOS API   │
-                   │  host network  │
-                   │  :8080         │
-                   │  (FastAPI)     │
-                   └────────┬───────┘
-                            │ WoL + Ollama proxy
-                            ▼
-                 Linux desktop :11434 (Ollama)
+                 │ standalone-nginx │ (nginx:alpine)
+                 └──┬────┬──────┬──┘
+                    │    │      │
+              auth  │ bb │ sylibos
+         .jkos.net  │    │  .jkos.net
+                    │    │      │
+         ┌──────────▼┐  ┌▼──┐  ┌▼──────────────────┐
+         │ jkos-auth │  │bb │  │  sylibos-net       │
+         │ :3100     │  │net│  │                    │
+         └───────────┘  │   │  │  sylibos-frontend  │
+                        │bb │  │  :80 (nginx SPA)   │
+                        │app│  │                    │
+                        │:  │  │  sylibos-api       │
+                        │30 │  │  :8004 (Node.js)   │
+                        │01 │  └──────────┬─────────┘
+                        └───┘             │
+                             └────────────┤
+                                          │ host.docker.internal:8080
+                                          ▼
+                               ┌────────────────┐
+                               │   LazurOS API  │ (host network)
+                               │   :8080        │
+                               └────────────────┘
 
-SSL: /mnt/Luna/ssl/live/beigeboard.jkos.net/{fullchain,privkey}.pem
-     SAN cert — covers both beigeboard.jkos.net and sylibos.jkos.net
+SSL:  /mnt/Luna/Backends/ssl/live/jkos.net/{fullchain,privkey}.pem
+      Wildcard — covers auth, beigeboard, sylibos subdomains
+
+Code: /mnt/Luna/Webhost/jkOS/{SylibOS,BeigeBoard,LazurOS,ORDECK}/
 
 Data volumes:
-  /mnt/Luna/BeigeBoard-Data/       ← beigeBoard.db
-  /mnt/Luna/sylibos-data/          ← sylibos.db
-  /mnt/Luna/nginx-standalone-logs/ ← access.log, error.log
-  /mnt/Luna/ssl/                   ← Let's Encrypt certs (read-only mount)
+  /mnt/Luna/Backends/BeigeBoard-Data/       ← beigeBoard.db
+  /mnt/Luna/Backends/SylibOS-Data/          ← sylibos.db, library.db (after pipeline run)
+  /mnt/Luna/Backends/jkos-auth-data/        ← jkos-auth.db, RSA keypair
+  /mnt/Luna/Backends/nginx-standalone-logs/ ← access.log, error.log
 ```
 
 ---
@@ -294,51 +304,50 @@ Data volumes:
 ## Updating
 
 ```bash
-BASE=/mnt/Luna/hub
+BASE=/mnt/Luna/Webhost/jkOS
 
-# Pull latest code
 git -C $BASE/BeigeBoard pull
-git -C $BASE/OpenCourseFlow pull
+git -C $BASE/SylibOS pull
 git -C $BASE/ORDECK pull
 
-# Rebuild individual services
-cd $BASE/BeigeBoard     && docker compose up -d --build
-cd $BASE/OpenCourseFlow && docker compose up -d --build
+cd $BASE/BeigeBoard && docker compose up -d --build
+cd $BASE/SylibOS    && docker compose up -d --build
 
-# Reload nginx (config-only change, no rebuild needed)
+# Reload nginx (config-only change):
 docker exec standalone-nginx nginx -s reload
-
-# Restart nginx container (if compose file changed)
-cd $BASE/ORDECK/docker/standalone-nginx && docker compose up -d
 ```
 
 ---
 
 ## Troubleshooting
 
-### 502 Bad Gateway on beigeboard.jkos.net
+### 502 on beigeboard.jkos.net
 - `docker logs bb-app` — check Express started on port 3001
-- `docker network inspect bb-net` — confirm `bb-app` and `standalone-nginx` are both listed
+- `docker network inspect bb-net` — confirm `bb-app` and `standalone-nginx` are listed
 
 ### 502 on sylibos.jkos.net/api/
 - `docker logs sylibos-api` — check Node.js started on port 8004
 - `docker network inspect sylibos-net` — confirm `sylibos-api` and `standalone-nginx` present
 
-### SSL cert errors
-- Cert is mounted read-only from `/mnt/Luna/ssl` → `/etc/letsencrypt`
-- Confirm file exists: `ls /mnt/Luna/ssl/live/beigeboard.jkos.net/fullchain.pem`
-- Check nginx can read it: `docker exec standalone-nginx cat /etc/letsencrypt/live/beigeboard.jkos.net/fullchain.pem | head -1`
+### Auth failing (401)
+- Confirm `JKOS_AUTH_PUBLIC_KEY` is set identically in BeigeBoard and SylibOS `.env`
+- Confirm the key matches what jkOS Auth generated (check `jkos-auth/.env` or `docker logs jkos-auth`)
+- Confirm `jkos_token` cookie exists in browser: DevTools → Application → Cookies → auth.jkos.net
+- Confirm jkOS Auth is running: `curl https://auth.jkos.net/health`
 
-### LazurOS not reachable from containers
-- Confirm `extra_hosts: host.docker.internal:host-gateway` is in both app composes ✓
+### SSL cert errors
+- Confirm files exist: `ls /mnt/Luna/Backends/ssl/live/jkos.net/`
+- Check nginx can read: `docker exec standalone-nginx cat /etc/letsencrypt/live/jkos.net/fullchain.pem | head -1`
+
+### LazurOS not reachable
 - `curl http://localhost:8080/health` from TrueNAS shell
 - `docker exec bb-app curl http://host.docker.internal:8080/health`
 
-### Nightly AI job not running (SylibOS)
-- `docker logs sylibos-api | grep nightly`
-- Check `AI_PROVIDER` in `.env` — must be `lazuros` or `ollama` (not `none`)
-- Trigger manually: `curl -X POST https://sylibos.jkos.net/api/admin/run-nightly`
+### Library page empty (no courses)
+- Expected — library.db starts empty. Run the Python pipeline to ingest courses.
+- `docker logs sylibos-api | grep library` — should see "seeding empty schema" on first boot
 
-### JWT auth failing (401)
-- All services sharing sessions must have the same `JWT_SECRET` in their `.env`
-- BeigeBoard and SylibOS share the same JWT secret as LazurOS
+### Nightly AI job not running
+- `docker logs sylibos-api | grep nightly`
+- Check `AI_PROVIDER` in `.env` — must be `lazuros` or `ollama`, not `none`
+- Trigger manually: `curl -X POST https://sylibos.jkos.net/api/admin/run-nightly`

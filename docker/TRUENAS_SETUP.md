@@ -35,15 +35,15 @@ reaches `jkos.net` (ORDECK) automatically. **Do not deploy `services/auth-api/`.
 ## Step 1 — Clone Repositories
 
 ```bash
-mkdir -p /mnt/YOUR_POOL/hub && cd /mnt/YOUR_POOL/hub
+mkdir -p /mnt/Luna/Webhost/jkOS && cd /mnt/Luna/Webhost/jkOS
 
-git clone https://github.com/YOUR_GITHUB_USERNAME/ORDECK.git
-git clone https://github.com/YOUR_GITHUB_USERNAME/BeigeBoard.git
-git clone https://github.com/YOUR_GITHUB_USERNAME/LazurOS.git
-git clone https://github.com/YOUR_GITHUB_USERNAME/OpenCourseFlow.git
+git clone https://github.com/jkondakalla/ORDECK.git
+git clone https://github.com/jkondakalla/BeigeBoard.git
+git clone https://github.com/jkondakalla/LazurOS.git
+git clone https://github.com/jkondakalla/SylibOS.git
 ```
 
-> `BeigeBoard/` and `LazurOS/` must be siblings of `ORDECK/`.
+> `BeigeBoard/`, `LazurOS/`, and `SylibOS/` must be siblings of `ORDECK/`.
 
 ---
 
@@ -52,8 +52,8 @@ git clone https://github.com/YOUR_GITHUB_USERNAME/OpenCourseFlow.git
 Place certificate files at the paths in `docker/nginx/docker-compose.yml`:
 
 ```
-/mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.crt
-/mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.key
+/mnt/Luna/Backends/ssl/jkos.net.crt
+/mnt/Luna/Backends/ssl/jkos.net.key
 ```
 
 **Option A — TrueNAS ACME (Let's Encrypt):**
@@ -62,9 +62,9 @@ Place certificate files at the paths in `docker/nginx/docker-compose.yml`:
 
 **Option B — Self-signed (local/dev only):**
 ```bash
-openssl req -x509 -newkey rsa:4096 -keyout /mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.key \
-  -out /mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.crt -days 365 -nodes \
-  -subj "/CN=YOUR_DOMAIN"
+openssl req -x509 -newkey rsa:4096 -keyout /mnt/Luna/Backends/ssl/jkos.net.key \
+  -out /mnt/Luna/Backends/ssl/jkos.net.crt -days 365 -nodes \
+  -subj "/CN=jkos.net"
 ```
 
 ---
@@ -76,7 +76,7 @@ ORDECK login uses jkOS Auth — no Google OAuth setup needed here for user auth.
 BeigeBoard Calendar sync still needs a Google OAuth app:
 1. [console.cloud.google.com](https://console.cloud.google.com) → APIs & Services → Credentials
 2. Create OAuth 2.0 Client ID → Web application
-3. Add Authorized redirect URI: `https://YOUR_DOMAIN/api/beigeboard/api/auth/google/callback`
+3. Add Authorized redirect URI: `https://jkos.net/api/beigeboard/api/auth/google/callback`
 4. Copy Client ID and Secret → paste into BeigeBoard `.env` (Step 7b)
 
 ---
@@ -89,7 +89,7 @@ LazurOS validates a static bearer token — not a JWT. Generate one:
 openssl rand -hex 32
 ```
 
-Paste this into `LAZUROS_TOKEN` in LazurOS, BeigeBoard, and OpenCourseFlow `.env` files.
+Paste this into `LAZUROS_TOKEN` in LazurOS, BeigeBoard, and SylibOS `.env` files.
 All three must use the **same value**.
 
 ---
@@ -170,12 +170,12 @@ Same variables as Plex API above.
 
 ### 7e — Nginx
 
-Replace `YOUR_DOMAIN` with your actual domain:
+Replace `jkos.net` with your actual domain:
 
 ```bash
-sed -i 's/YOUR_DOMAIN/jkos.net/g' \
-  /mnt/YOUR_POOL/hub/ORDECK/docker/nginx/nginx.conf \
-  /mnt/YOUR_POOL/hub/ORDECK/docker/nginx/docker-compose.yml
+sed -i 's/jkos.net/jkos.net/g' \
+  /mnt/Luna/Webhost/jkOS/ORDECK/docker/nginx/nginx.conf \
+  /mnt/Luna/Webhost/jkOS/ORDECK/docker/nginx/docker-compose.yml
 ```
 
 ---
@@ -183,10 +183,10 @@ sed -i 's/YOUR_DOMAIN/jkos.net/g' \
 ## Step 8 — Start Services (in order)
 
 ```bash
-BASE=/mnt/YOUR_POOL/hub/ORDECK/docker
+BASE=/mnt/Luna/Webhost/jkOS/ORDECK/docker
 
 # 1. LazurOS API (host network)
-cd /mnt/YOUR_POOL/hub/LazurOS
+cd /mnt/Luna/Webhost/jkOS/LazurOS
 docker compose up -d
 
 # 2. BeigeBoard (plugin + API)
@@ -318,17 +318,17 @@ SSO: auth.jkos.net issues jkos_token (RS256 JWT, Domain=.jkos.net)
 ## Updating
 
 ```bash
-cd /mnt/YOUR_POOL/hub/ORDECK && git pull
+cd /mnt/Luna/Webhost/jkOS/ORDECK && git pull
 
 # Rebuild a specific service:
 cd docker/plex && docker compose up -d --build
 
 # Rebuild all:
 for dir in beigeboard plex recipe lazuros shell; do
-  cd /mnt/YOUR_POOL/hub/ORDECK/docker/$dir
+  cd /mnt/Luna/Webhost/jkOS/ORDECK/docker/$dir
   docker compose up -d --build
 done
-cd /mnt/YOUR_POOL/hub/ORDECK/docker/nginx && docker compose up -d
+cd /mnt/Luna/Webhost/jkOS/ORDECK/docker/nginx && docker compose up -d
 ```
 
 ---
@@ -344,5 +344,5 @@ cd /mnt/YOUR_POOL/hub/ORDECK/docker/nginx && docker compose up -d
 | Shell | `ordeck-shell` | `VITE_JKOS_AUTH_URL=https://auth.jkos.net`, `VITE_APP_ORIGIN=https://jkos.net` |
 | Nginx | `ordeck-nginx` | (none — reads nginx.conf) |
 
-`LAZUROS_TOKEN` must be the same value in LazurOS, BeigeBoard, OpenCourseFlow, Plex, and Recipe.
+`LAZUROS_TOKEN` must be the same value in LazurOS, BeigeBoard, SylibOS, Plex, and Recipe.
 `JKOS_AUTH_PUBLIC_KEY` must be the same value in all backend services — copy from `jkos-auth/.env`.

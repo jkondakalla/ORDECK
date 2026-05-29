@@ -25,7 +25,7 @@ declare module 'recipe-plugin/Widget' {
   export default Widget;
 }
 
-declare module 'opencourseflow-plugin/Widget' {
+declare module 'sylibos-plugin/Widget' {
   import { ComponentType } from 'react';
   const Widget: ComponentType;
   export default Widget;

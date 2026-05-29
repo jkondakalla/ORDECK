@@ -8,10 +8,9 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      # Place your SSL cert + key here on the TrueNAS host:
-      - /mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.crt:/etc/nginx/ssl/YOUR_DOMAIN.crt:ro
-      - /mnt/YOUR_TRUENAS_POOL/ssl/YOUR_DOMAIN.key:/etc/nginx/ssl/YOUR_DOMAIN.key:ro
-      - /mnt/YOUR_TRUENAS_POOL/nginx-logs:/var/log/nginx
+      - ${SSL_PATH:-/mnt/Luna/Backends/ssl}/jkos.net.crt:/etc/nginx/ssl/jkos.net.crt:ro
+      - ${SSL_PATH:-/mnt/Luna/Backends/ssl}/jkos.net.key:/etc/nginx/ssl/jkos.net.key:ro
+      - ${NGINX_LOGS_PATH:-/mnt/Luna/Backends/nginx-ordeck-logs}:/var/log/nginx
     # host-gateway lets nginx reach LazurOS which runs on the host network (required for WoL)
     extra_hosts:
       - "host.docker.internal:host-gateway"

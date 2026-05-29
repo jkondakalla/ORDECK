@@ -22,10 +22,10 @@ jkHUB is a self-hosted, unified life-assistant dashboard running on TrueNAS SCAL
 ├── ORDECK/          ← monorepo shell (Turborepo + pnpm) — github.com/jkondakalla/ORDECK
 ├── BeigeBoard/      ← calendar + task manager (standalone + widget) — github.com/jkondakalla/BeigeBoard
 ├── LazurOS/         ← Wake-on-LAN compute proxy + AI gateway — github.com/jkondakalla/LazurOS
-└── OpenCourseFlow/  ← SylibOS: MIT OCW course importer + AI scheduler — github.com/jkondakalla/OpenCourseFlow
+└── SylibOS/  ← SylibOS: MIT OCW course importer + AI scheduler — github.com/jkondakalla/SylibOS
 ```
 
-> The directory on disk is still `OpenCourseFlow/` but the app, containers, networks, and subdomains are all branded **SylibOS**.
+> The directory on disk is still `SylibOS/` but the app, containers, networks, and subdomains are all branded **SylibOS**.
 
 ---
 
@@ -55,7 +55,7 @@ cp .env.example .env && nano .env    # JWT_SECRET, GOOGLE_*, LAZUROS_TOKEN
 docker compose up -d --build
 
 # 3. SylibOS
-cd /mnt/Luna/hub/OpenCourseFlow
+cd /mnt/Luna/hub/SylibOS
 cp .env.example .env && nano .env    # AI_PROVIDER, LAZUROS_TOKEN
 docker compose up -d --build
 
@@ -88,7 +88,7 @@ ORDECK/
 ├── plugins/
 │   ├── beigeboard/           ← widget wrapper → BeigeBoard/src, port 3003
 │   ├── lazuros/              ← widget wrapper → LazurOS/widget, port 3002
-│   ├── opencourseflow/       ← SylibOS widget (iframe tile), port 3005
+│   ├── sylibos/              ← SylibOS widget (iframe tile), port 3005
 │   ├── plex/                 ← AI media advisor widget, port 3001 ✓
 │   └── recipe/               ← AI recipe generator widget, port 3004 ✓
 ├── services/
@@ -99,7 +99,7 @@ ORDECK/
     ├── TRUENAS_SETUP.md      ← ORDECK-specific deployment guide
     ├── standalone-nginx/     ← standalone.conf + docker-compose.yml for subdomains
     ├── nginx/                ← ORDECK unified nginx
-    ├── opencourseflow/       ← SylibOS ORDECK-mode docker config
+    ├── sylibos/              ← SylibOS ORDECK-mode docker config
     └── */docker-compose.yml  ← per-service compose files
 ```
 
@@ -111,12 +111,12 @@ ORDECK/
 | lazuros-plugin | 3002 | ordeck-lazuros-plugin | 80 | ✓ |
 | beigeboard-plugin | 3003 | ordeck-beigeboard-plugin | 80 | ✓ |
 | recipe-plugin | 3004 | ordeck-recipe-plugin | 80 | ✓ |
-| sylibos-plugin | 3005 | ordeck-opencourseflow-plugin | 80 | ✓ |
+| sylibos-plugin | 3005 | ordeck-sylibos-plugin | 80 | ✓ |
 | auth-api | 8000 | ordeck-auth | 8000 | ✓ |
 | plex-api | 8001 | ordeck-plex-api | 8001 | ✓ |
 | recipe-api | 8002 | ordeck-recipe-api | 8002 | ✓ |
 | beigeboard-api | 8003 | ordeck-beigeboard-api | 8003 | ✓ |
-| sylibos-api | 8004 | ordeck-opencourseflow-api | 8004 | ✓ |
+| sylibos-api | 8004 | ordeck-sylibos-api | 8004 | ✓ |
 | LazurOS API | 8080 | ordeck-lazuros-api | host network | ✓ |
 
 ### Nginx routing (ORDECK unified — future)
@@ -125,7 +125,7 @@ ORDECK/
 /api/plex/           → ordeck-plex-api:8001
 /api/recipes/        → ordeck-recipe-api:8002
 /api/beigeboard/     → ordeck-beigeboard-api:8003   (strips prefix)
-/api/opencourseflow/ → ordeck-opencourseflow-api:8004 (strips prefix)
+/api/sylibos/ → ordeck-sylibos-api:8004 (strips prefix)
 /api/lazuros/        → host.docker.internal:8080/    (strips prefix)
 /plugins/*/          → ordeck-*-plugin:80
 /                    → ordeck-shell:80
@@ -209,7 +209,7 @@ LAZUROS_TOKEN, LAZUROS_DEFAULT_MODEL=llama3.2
 
 **Status: Fully implemented — frontend + backend + standalone Docker**  
 **Tech:** React 19 · TypeScript 6 · Vite 8 · Zustand · Tailwind 4 · Anthropic SDK · React Router 7 + Node.js · SQLite · node-cron  
-**Location:** `OpenCourseFlow/` (directory) · deployed at `https://sylibos.jkos.net`
+**Location:** `SylibOS/` (directory) · deployed at `https://sylibos.jkos.net`
 
 > SylibOS is a standalone app — NOT a federated widget (React 19 ≠ React 18 singleton).  
 > An iframe tile wraps it in the ORDECK dashboard.
@@ -281,7 +281,7 @@ NIGHTLY_CRON=0 2 * * *
 ```typescript
 WidgetManifest, WidgetStatus, WidgetInstance
 WidgetType  // 'clock' | 'plugins' | 'connections' | 'log' | 'plex' | 'lazuros'
-            // | 'beigeboard' | 'recipe' | 'opencourseflow'
+            // | 'beigeboard' | 'recipe' | 'sylibos'
 HubUser, WidgetProps
 Item          // BeigeBoard task/goal/event (full schema)
 CalendarAccount  // google | outlook | icloud | bb
@@ -315,7 +315,7 @@ CalendarAccount  // google | outlook | icloud | bb
 | SylibOS Python preprocessor | ✓ | 6 ZIP layout adapters, CourseManifest output |
 | SylibOS standalone Docker | ✓ | sylibos-net, sylibos.jkos.net |
 | Standalone nginx (both subdomains) | ✓ | ORDECK/docker/standalone-nginx/, Let's Encrypt |
-| SylibOS → ORDECK widget | ✓ | iframe tile in plugins/opencourseflow/ |
+| SylibOS → ORDECK widget | ✓ | iframe tile in plugins/sylibos/ |
 | ORDECK unified portal bring-up | ✗ next | Fill ORDECK .env files, start all services |
 
 ---
@@ -376,11 +376,11 @@ cd "/media/jag/The Forge/Hub/BeigeBoard"
 npm run dev      # port 5173, proxies /api → 3001
 
 # Terminal 4 — SylibOS backend
-cd "/media/jag/The Forge/Hub/OpenCourseFlow/backend"
+cd "/media/jag/The Forge/Hub/SylibOS/backend"
 node index.js    # port 8004
 
 # Terminal 5 — SylibOS frontend
-cd "/media/jag/The Forge/Hub/OpenCourseFlow"
+cd "/media/jag/The Forge/Hub/SylibOS"
 npm run dev      # port 5173
 
 # Terminal 6 — Auth API
@@ -412,7 +412,7 @@ Hub/
 │   ├── plugins/
 │   │   ├── beigeboard/src/Widget.tsx
 │   │   ├── lazuros/src/Widget.tsx
-│   │   ├── opencourseflow/src/Widget.tsx ← iframe tile → sylibos.jkos.net
+│   │   ├── sylibos/src/Widget.tsx ← iframe tile → sylibos.jkos.net
 │   │   ├── plex/src/Widget.tsx
 │   │   └── recipe/src/Widget.tsx
 │   ├── packages/
@@ -445,7 +445,7 @@ Hub/
 │   ├── widget/index.tsx                  ← React status + wake button
 │   └── Dockerfile                        ← python:3.11-slim, port 8080
 │
-└── OpenCourseFlow/                       ← SylibOS on disk
+└── SylibOS/                       ← SylibOS on disk
     ├── Dockerfile                        ← multi-stage: Vite build → nginx:alpine
     ├── docker-compose.yml                ← sylibos-frontend + sylibos-api on sylibos-net
     ├── .env.example                      ← all standalone vars

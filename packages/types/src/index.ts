@@ -68,7 +68,7 @@ export type WidgetType =
   | 'lazuros'
   | 'beigeboard'
   | 'recipe'
-  | 'opencourseflow';
+  | 'sylibos';
 
 export interface HubUser {
   name: string;

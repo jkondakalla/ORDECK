@@ -2,8 +2,8 @@ import '@hub/ui/tokens.css';
 import { useEffect, useState } from 'react';
 
 const COLOR = '#818cf8';
-const OCF_API = (import.meta as unknown as { env: Record<string, string> }).env.VITE_OCF_API_URL ?? '/api/opencourseflow';
-const OCF_APP = (import.meta as unknown as { env: Record<string, string> }).env.VITE_OCF_APP_URL ?? '#';
+const SYLIBOS_API = (import.meta as unknown as { env: Record<string, string> }).env.VITE_SYLIBOS_API_URL ?? '/api/sylibos';
+const SYLIBOS_APP = (import.meta as unknown as { env: Record<string, string> }).env.VITE_SYLIBOS_APP_URL ?? '#';
 
 interface Summary {
   todayDone: number;
@@ -47,13 +47,13 @@ function GoalArc({ done, goal }: { done: number; goal: number }) {
   );
 }
 
-export default function OpenCourseFlowWidget() {
+export default function SylibOSWidget() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${OCF_API}/api/summary`, { credentials: 'include' })
+    fetch(`${SYLIBOS_API}/api/summary`, { credentials: 'include' })
       .then(r => { if (!r.ok) throw new Error(); return r.json(); })
       .then(d => { setSummary(d); setLoading(false); })
       .catch(() => { setError(true); setLoading(false); });
@@ -73,9 +73,9 @@ export default function OpenCourseFlowWidget() {
         borderBottom: '1px solid var(--hub-line)',
         paddingBottom: 8, flexShrink: 0,
       }}>
-        <span style={{ color: COLOR, fontSize: 11, letterSpacing: '0.2em', fontWeight: 700 }}>◈ OCF</span>
+        <span style={{ color: COLOR, fontSize: 11, letterSpacing: '0.2em', fontWeight: 700 }}>◈ SYB</span>
         <span style={{ fontSize: 9, color: `${COLOR}88`, letterSpacing: '0.14em' }}>COURSE STUDY</span>
-        <span style={{ marginLeft: 'auto', fontSize: 9, color: 'var(--hub-cream-faint)', letterSpacing: '0.1em' }}>OCF-001</span>
+        <span style={{ marginLeft: 'auto', fontSize: 9, color: 'var(--hub-cream-faint)', letterSpacing: '0.1em' }}>SYB-001</span>
       </div>
 
       {loading && (
@@ -88,10 +88,10 @@ export default function OpenCourseFlowWidget() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
           <div style={{ fontSize: 18, color: `${COLOR}44` }}>◈</div>
           <div style={{ fontSize: 9, color: 'var(--hub-cream-faint)', letterSpacing: '0.2em', textAlign: 'center' }}>
-            OCF OFFLINE<br />
+            SYB OFFLINE<br />
             <span style={{ fontSize: 8, opacity: 0.6 }}>check backend config</span>
           </div>
-          <a href={OCF_APP} target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, color: COLOR, letterSpacing: '0.12em', textDecoration: 'none', border: `1px solid ${COLOR}44`, padding: '3px 8px' }}>
+          <a href={SYLIBOS_APP} target="_blank" rel="noopener noreferrer" style={{ fontSize: 9, color: COLOR, letterSpacing: '0.12em', textDecoration: 'none', border: `1px solid ${COLOR}44`, padding: '3px 8px' }}>
             OPEN APP ↗
           </a>
         </div>
@@ -151,7 +151,7 @@ export default function OpenCourseFlowWidget() {
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
             {summary.nextLesson ? (
               <a
-                href={`${OCF_APP}/lesson/${summary.nextLesson.segmentId}`}
+                href={`${SYLIBOS_APP}/lesson/${summary.nextLesson.segmentId}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -170,7 +170,7 @@ export default function OpenCourseFlowWidget() {
               </a>
             ) : summary.courseCount === 0 ? (
               <a
-                href={`${OCF_APP}/import`}
+                href={`${SYLIBOS_APP}/import`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -185,7 +185,7 @@ export default function OpenCourseFlowWidget() {
               </a>
             ) : (
               <a
-                href={OCF_APP}
+                href={SYLIBOS_APP}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{

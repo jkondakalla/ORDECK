@@ -1,25 +1,25 @@
-# Assumes Hub/ layout: ORDECK/ and OpenCourseFlow/ are siblings
+# Assumes Hub/ layout: ORDECK/ and SylibOS/ are siblings
 services:
-  opencourseflow-plugin:
+  sylibos-plugin:
     build:
       context: ../../
-      dockerfile: docker/opencourseflow/Dockerfile.plugin
-    container_name: ordeck-opencourseflow-plugin
+      dockerfile: docker/sylibos/Dockerfile.plugin
+    container_name: ordeck-sylibos-plugin
     restart: unless-stopped
     ports:
       - "3005:80"
     networks:
       - ordeck-net
 
-  opencourseflow-api:
+  sylibos-api:
     build:
-      context: ../../../OpenCourseFlow/backend
-    container_name: ordeck-opencourseflow-api
+      context: ../../../SylibOS/backend
+    container_name: ordeck-sylibos-api
     restart: unless-stopped
     ports:
       - "8004:8004"
     volumes:
-      - /mnt/Luna/Backends/SylibOS-Data:/data
+      - ${SYLIBOS_DATA_PATH:-/mnt/Luna/Backends/SylibOS-Data}:/data
     env_file: .env
     environment:
       - PORT=8004
