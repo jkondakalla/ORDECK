@@ -14,8 +14,8 @@ async def require_user(request: Request) -> dict:
         raise HTTPException(status_code=500, detail="JKOS_AUTH_PUBLIC_KEY is not set")
     try:
         return jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"], issuer="jkos-auth")
-    except JWTError as e:
-        raise HTTPException(status_code=401, detail=str(e))
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
 CurrentUser = Annotated[dict, Depends(require_user)]
