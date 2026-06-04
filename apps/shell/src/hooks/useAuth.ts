@@ -2,8 +2,6 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 
 const JKOS_AUTH_URL = (import.meta.env.VITE_JKOS_AUTH_URL as string | undefined)
   ?? 'https://auth.jkos.net';
-const APP_ORIGIN = (import.meta.env.VITE_APP_ORIGIN as string | undefined)
-  ?? 'https://jkos.net';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -31,7 +29,7 @@ export interface AuthContext {
 export const authContext = createContext<AuthContext>({
   state:           { status: 'loading' },
   loginWithGoogle: () => {
-    window.location.href = `${JKOS_AUTH_URL}/auth/login?redirect_to=${encodeURIComponent(APP_ORIGIN)}`;
+    window.location.href = `${JKOS_AUTH_URL}/auth/login?redirect_to=${encodeURIComponent(window.location.href)}`;
   },
   logout: async () => { /* noop */ },
 });
@@ -88,7 +86,7 @@ export function useAuthProvider(): AuthContext {
 
   const loginWithGoogle = useCallback(() => {
     window.location.href =
-      `${JKOS_AUTH_URL}/auth/login?redirect_to=${encodeURIComponent(APP_ORIGIN)}`;
+      `${JKOS_AUTH_URL}/auth/login?redirect_to=${encodeURIComponent(window.location.href)}`;
   }, []);
 
   const logout = useCallback(async () => {
@@ -98,7 +96,7 @@ export function useAuthProvider(): AuthContext {
         credentials: 'include',
       });
     } finally {
-      window.location.href = JKOS_AUTH_URL;
+      window.location.href = `${JKOS_AUTH_URL}/auth/login`;
     }
   }, []);
 
