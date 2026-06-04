@@ -4,9 +4,9 @@
 **TrueNAS path:** `/mnt/Luna/Webhost/jkOS/ORDECK/`  
 **URL:** `https://jkos.net` (apex domain)  
 **Container:** `ordeck-shell` on `jkos-internal`  
-**Status:** Deployed — the jkOS portal  
+**Status:** Built, not yet deployed — pending apex `jkos.net` DNS record and first deploy via jkos-deploy (see DEPLOYMENT.md section 2 and ROADMAP.md Priority 1)  
 **Tech:** Turborepo · pnpm workspaces · React 18 · TypeScript · Vite · Module Federation  
-**Last updated:** 2026-06-04 (portal redesign + unified aesthetics)
+**Last updated:** 2026-06-04 (portal redesign + unified aesthetics; status corrected)
 
 ---
 

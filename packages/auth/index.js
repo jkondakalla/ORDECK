@@ -9,7 +9,7 @@ const PUBLIC_KEY = (process.env.JKOS_AUTH_PUBLIC_KEY || '').replace(/\\n/g, '\n'
  * Returns decoded payload, or throws on failure.
  */
 function verifyToken(token) {
-  if (!PUBLIC_KEY) throw new Error('JKOS_AUTH_PUBLIC_KEY is not set');
+  if (!PUBLIC_KEY.trim()) throw new Error('JKOS_AUTH_PUBLIC_KEY is not set');
   return jwt.verify(token, PUBLIC_KEY, { algorithms: ['RS256'], issuer: 'jkos-auth' });
 }
 
