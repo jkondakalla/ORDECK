@@ -1,7 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
 import { WidgetInstance, WidgetType } from '@hub/types';
+import { useJkOSPreferences } from '../hooks/useJkOSPreferences';
+import { UnifiedSettingsPanel } from '../components/settings/UnifiedSettingsPanel';
+import { FilmGrain, Halation, ScanLines, Artifacts } from '../components/Overlays';
+import { AppLauncher } from '../components/AppLauncher';
+import WidgetPalette from '../components/WidgetPalette';
+import type { PaletteEntry, ActiveSession } from '../components/WidgetPalette';
 import Header from '../components/Header';
-import Sidebar, { SidebarEntry, ActiveSession } from '../components/Sidebar';
 import Footer from '../components/Footer';
 import Canvas, { CanvasRegistryEntry } from '../components/canvas/Canvas';
 import BusStrip from '../components/BusStrip';
@@ -11,6 +16,7 @@ import { ContextSystem, ContextState } from '../components/ContextMenu';
 import AiPanel from '../components/AiPanel';
 
 // Core widgets
+import AppsWidget from '../widgets/core/AppsWidget';
 import ClockWidget from '../widgets/core/ClockWidget';
 import ConnectionsWidget from '../widgets/core/ConnectionsWidget';
 import PluginsWidget from '../widgets/core/PluginsWidget';
@@ -40,6 +46,12 @@ import BlankPanelWidget from '../widgets/deco/BlankPanelWidget';
 
 const REGISTRY: Record<string, CanvasRegistryEntry> = {
   // ── Core ──────────────────────────────────────────────────────────────────
+  apps: {
+    type: 'apps', label: 'APP REGISTRY', title: 'APPS', code: 'APP',
+    glyph: '◈', color: '#ffb000', header: 'classic', led: 'amber',
+    subtitle: 'jkOS SUITE',
+    component: AppsWidget, w: 12, h: 8,
+  },
   clock: {
     type: 'clock', label: 'CHRONOMETER', title: 'CHRONO', code: 'CLK',
     glyph: '⌚', color: '#ffb000', header: 'classic', led: 'amber',
@@ -192,9 +204,10 @@ const REGISTRY: Record<string, CanvasRegistryEntry> = {
   },
 };
 
-// Sidebar-friendly list derived from registry
-const SIDEBAR_REGISTRY: SidebarEntry[] = [
+// Palette-friendly list derived from registry
+const SIDEBAR_REGISTRY: PaletteEntry[] = [
   // Core
+  { ...REGISTRY.apps,        type: 'apps',        led: 'amber' },
   { ...REGISTRY.clock,       type: 'clock',       led: 'amber' },
   { ...REGISTRY.plugins,     type: 'plugins',     led: 'amber' },
   { ...REGISTRY.connections, type: 'connections', led: 'cyan'  },
@@ -242,11 +255,13 @@ interface LayoutState {
   nextId: number;
 }
 
+// AppsWidget removed from default — AppLauncher is the portal hero now.
+// Keep the widget available in the palette for users who want it pinned.
 const DEFAULT_LAYOUT: WidgetInstance[] = [
   { id: 1, type: 'clock',       x: 1,  y: 1, w: 6,  h: 5 },
-  { id: 2, type: 'plugins',     x: 8,  y: 1, w: 10, h: 7 },
-  { id: 3, type: 'connections', x: 1,  y: 7, w: 7,  h: 7 },
-  { id: 4, type: 'log',         x: 19, y: 1, w: 8,  h: 6 },
+  { id: 2, type: 'connections', x: 8,  y: 1, w: 7,  h: 8 },
+  { id: 3, type: 'log',         x: 16, y: 1, w: 8,  h: 6 },
+  { id: 4, type: 'scope',       x: 1,  y: 7, w: 6,  h: 6 },
 ];
 
 function loadLayout(): LayoutState | null {
@@ -264,13 +279,20 @@ function saveLayout(state: LayoutState) {
 // ─── Dashboard ────────────────────────────────────────────────────────────────
 
 export default function Dashboard() {
+  const { theme, effects, lazuros, user, saving, patchTheme, patchEffects, patchLazuros } =
+    useJkOSPreferences();
+
   const [state, setState] = useState<LayoutState>(() => {
     const saved = loadLayout();
     return saved ?? { widgets: DEFAULT_LAYOUT, nextId: DEFAULT_LAYOUT.length + 1 };
   });
   const [settings, setSetting, resetSettings] = useSettings();
-  const [configOpen, setConfigOpen] = useState(false);
-  const [aiOpen, setAiOpen]         = useState(false);
+  const [configOpen, setConfigOpen]       = useState(false);
+  const [aiOpen, setAiOpen]               = useState(false);
+  const [profileOpen, setProfileOpen]     = useState(false);
+  const [paletteCollapsed, setPaletteCollapsed] = useState(() => {
+    try { return localStorage.getItem('ordeck-palette-collapsed') === '1'; } catch { return false; }
+  });
   const [contextState, setContextState] = useState<ContextState | null>(null);
 
   useEffect(() => { saveLayout(state); }, [state]);
@@ -364,12 +386,13 @@ export default function Dashboard() {
   return (
     <>
       <Header
-        pluginCount={state.widgets.length}
         widgetCount={state.widgets.length}
         onOpenConfig={() => setConfigOpen(o => !o)}
         configOpen={configOpen}
         onOpenAI={() => setAiOpen(o => !o)}
         aiOpen={aiOpen}
+        onOpenProfile={() => setProfileOpen(o => !o)}
+        profileOpen={profileOpen}
       />
 
       {settings.showBus && <BusStrip />}
@@ -382,21 +405,38 @@ export default function Dashboard() {
         bottom: 'var(--hub-footer-h)',
         display: 'flex',
       }}>
-        <Sidebar
+        <WidgetPalette
           registry={SIDEBAR_REGISTRY}
           sessions={sessions}
+          collapsed={paletteCollapsed}
+          onToggle={() => {
+            const next = !paletteCollapsed;
+            setPaletteCollapsed(next);
+            try { localStorage.setItem('ordeck-palette-collapsed', next ? '1' : '0'); } catch { /* ignore */ }
+          }}
           onAddWidget={addWidget}
           onResetLayout={resetLayout}
           onClearAll={clearAll}
         />
-        <Canvas
-          widgets={state.widgets}
-          registry={REGISTRY}
-          onUpdateWidget={updateWidget}
-          onCloseWidget={closeWidget}
-          onFocusWidget={focusWidget}
-          onContextWidget={openContext}
-        />
+
+        {/* Portal main: AppLauncher + Widget Canvas */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+          filter: effects.halation ? 'url(#hub-halation)' : undefined,
+        }}>
+          <AppLauncher user={user} />
+
+          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            <Canvas
+              widgets={state.widgets}
+              registry={REGISTRY}
+              onUpdateWidget={updateWidget}
+              onCloseWidget={closeWidget}
+              onFocusWidget={focusWidget}
+              onContextWidget={openContext}
+            />
+          </div>
+        </div>
       </div>
 
       {settings.showRail && (
@@ -431,6 +471,25 @@ export default function Dashboard() {
       />
 
       <AiPanel open={aiOpen} onClose={() => setAiOpen(false)} />
+
+      <UnifiedSettingsPanel
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        user={user}
+        theme={theme}
+        effects={effects}
+        lazuros={lazuros}
+        saving={saving}
+        patchTheme={patchTheme}
+        patchEffects={patchEffects}
+        patchLazuros={patchLazuros}
+      />
+
+      {/* Suite-wide CRT overlays — driven by user preferences */}
+      {effects.halation  && <Halation />}
+      {effects.grain     && <FilmGrain strength={effects.grainStrength} />}
+      {effects.scanLines && <ScanLines strength={effects.scanStrength} />}
+      {effects.artifacts && <Artifacts />}
     </>
   );
 }

@@ -1,5 +1,5 @@
-import { useEffect, useState, ReactNode } from 'react';
-import { Led, Screw, Vent, DymoTape } from './hardware';
+import { useEffect, useState } from 'react';
+import { Led, Vent } from './hardware';
 import { ConfigButton } from './settings';
 
 // ─── Hooks ────────────────────────────────────────────────────────────────────
@@ -19,33 +19,29 @@ function useUTCClock() {
   return time;
 }
 
-const SESSION_ID = 'SX-' + String(Math.floor(Math.random() * 9000) + 1000);
-
 // ─── Header ───────────────────────────────────────────────────────────────────
 
 interface HeaderProps {
-  pluginCount?: number;
   widgetCount?: number;
-  totalLoad?: number;
-  alerts?: number;
   onOpenConfig?: () => void;
   configOpen?: boolean;
   onOpenAI?: () => void;
   aiOpen?: boolean;
+  onOpenProfile?: () => void;
+  profileOpen?: boolean;
 }
 
 export default function Header({
-  pluginCount = 0,
-  widgetCount,
-  totalLoad = 0,
-  alerts = 0,
+  widgetCount = 0,
   onOpenConfig,
   configOpen = false,
   onOpenAI,
   aiOpen = false,
+  onOpenProfile,
+  profileOpen = false,
 }: HeaderProps) {
   const utc = useUTCClock();
-  const count = widgetCount ?? pluginCount;
+  const count = widgetCount;
 
   return (
     <header style={{
@@ -57,84 +53,53 @@ export default function Header({
       display: 'flex', alignItems: 'stretch',
       zIndex: 100,
     }}>
-      {/* Logo / brand block */}
+      {/* Brand block */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '0 18px 0 16px',
+        display: 'flex', alignItems: 'center', gap: 12,
+        padding: '0 20px',
         borderRight: '1px solid var(--hub-line)',
-        background: 'linear-gradient(180deg, var(--hub-bg-3), var(--hub-bg-2))',
         minWidth: 'var(--hub-sidebar-w)',
         flexShrink: 0,
       }}>
-        <div style={{ position: 'relative' }}>
-          <Screw size={7} rot={20} style={{ position: 'absolute', top: -10, left: -8 }} />
-          <Screw size={7} rot={-15} style={{ position: 'absolute', bottom: -10, left: -8 }} />
-          <div style={{
-            width: 34, height: 34,
-            border: '1.5px solid var(--hub-amber)',
-            color: 'var(--hub-amber)',
-            display: 'grid', placeItems: 'center',
-            fontWeight: 800, fontSize: 16, letterSpacing: '0.02em',
-            boxShadow: '0 0 12px var(--hub-amber-glow), inset 0 0 8px color-mix(in srgb, var(--hub-amber) 20%, transparent)',
-            background: 'radial-gradient(circle at 30% 25%, var(--hub-bg-3), var(--hub-bg-0))',
-            fontFamily: 'var(--hub-font-seg)',
-          }}>JK</div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{
+          width: 32, height: 32, flexShrink: 0,
+          border: '1.5px solid var(--hub-amber)',
+          color: 'var(--hub-amber)',
+          display: 'grid', placeItems: 'center',
+          fontWeight: 800, fontSize: 14,
+          boxShadow: '0 0 10px var(--hub-amber-glow)',
+          background: 'radial-gradient(circle at 30% 25%, var(--hub-bg-3), var(--hub-bg-0))',
+          fontFamily: 'var(--hub-font-seg)',
+        }}>JK</div>
+        <div>
           <div style={{
             color: 'var(--hub-amber)', fontWeight: 700,
-            letterSpacing: '0.18em', fontSize: 16,
+            letterSpacing: '0.18em', fontSize: 14,
             textShadow: '0 0 6px var(--hub-amber-glow)',
             fontFamily: 'var(--hub-font-seg)',
             lineHeight: 1,
           }}>ORDECK</div>
-          <div style={{ color: 'var(--hub-cream-dim)', fontSize: 9, letterSpacing: '0.22em', marginTop: 4 }}>
-            CONTROL SURFACE · v1.2.0
+          <div style={{ color: 'var(--hub-cream-faint)', fontSize: 8, letterSpacing: '0.18em', marginTop: 3 }}>
+            PORTAL · v2.0
           </div>
         </div>
-        <DymoTape style={{ marginLeft: 'auto', fontSize: 9 }}>OP-DECK</DymoTape>
       </div>
 
-      {/* Stat cluster */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 22 }}>
-        <Stat label="OPERATOR" value="JAG" />
-        <Divider />
-        <Stat label="MODULES" value={String(count).padStart(2, '0')} />
-        <Divider />
-        <Stat label="CORE">
-          <Led color="green" size="sm" style={{ marginRight: 6 }} />
-          <span style={{ color: 'var(--hub-amber)' }} className="glow-dim">NOMINAL</span>
-        </Stat>
-        <Divider />
-        <Stat label="LOAD">
-          <span style={{ color: 'var(--hub-amber)', fontVariantNumeric: 'tabular-nums' }} className="glow-dim">
-            {Math.round(totalLoad * 100).toString().padStart(2, '0')}%
-          </span>
-        </Stat>
-        <Divider />
-        <Stat label="ALERTS">
-          {alerts > 0 ? (
-            <>
-              <Led color="red" size="sm" style={{ marginRight: 6 }} />
-              <span style={{ color: 'var(--hub-red)' }}>{alerts}</span>
-            </>
-          ) : (
-            <>
-              <Led off size="sm" style={{ marginRight: 6 }} />
-              <span style={{ color: 'var(--hub-cream-dim)' }}>—</span>
-            </>
-          )}
-        </Stat>
+      {/* Center — status only */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 16px', gap: 8 }}>
+        <Led color="green" size="sm" />
+        <span style={{ fontSize: 9, color: 'var(--hub-cream-dim)', letterSpacing: '0.18em', fontFamily: 'var(--hub-font-mono)' }}>READY</span>
+        <span style={{ fontSize: 9, color: 'var(--hub-cream-faint)', letterSpacing: '0.12em', fontFamily: 'var(--hub-font-mono)' }}>
+          · {count > 0 ? `${count} WIDGETS` : 'SURFACE CLEAR'}
+        </span>
       </div>
 
-      {/* Right cluster: session + UTC + config + vent */}
+      {/* Right cluster: UTC + AI + config + profile + vent */}
       <div style={{
-        display: 'flex', alignItems: 'center', gap: 14,
+        display: 'flex', alignItems: 'center', gap: 10,
         padding: '0 16px',
         borderLeft: '1px solid var(--hub-line)',
-        background: 'linear-gradient(180deg, var(--hub-bg-3), var(--hub-bg-1))',
       }}>
-        <Stat label="SESSION" value={SESSION_ID} />
         <div style={{
           padding: '5px 10px',
           background: 'var(--hub-bg-0)',
@@ -169,6 +134,9 @@ export default function Header({
         {onOpenConfig && (
           <ConfigButton open={configOpen} onClick={onOpenConfig} />
         )}
+        {onOpenProfile && (
+          <ProfileButton open={profileOpen} onClick={onOpenProfile} />
+        )}
         <Vent slats={4} width={32} />
       </div>
     </header>
@@ -177,25 +145,28 @@ export default function Header({
 
 // ─── Internals ────────────────────────────────────────────────────────────────
 
-function Divider() {
-  return <span style={{ width: 1, height: 32, background: 'var(--hub-line)', flexShrink: 0 }} />;
-}
-
-function Stat({ label, value, children, style }: {
-  label: string;
-  value?: string | number;
-  children?: ReactNode;
-  style?: React.CSSProperties;
-}) {
+function ProfileButton({ open, onClick }: { open: boolean; onClick?: () => void }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15, gap: 2, flexShrink: 0, ...style }}>
-      <span className="mono-eyebrow">{label}</span>
-      <span style={{
-        fontSize: 12, color: 'var(--hub-cream)', fontWeight: 500,
-        letterSpacing: '0.05em', display: 'flex', alignItems: 'center', minHeight: 16,
-      }}>
-        {children ?? value}
-      </span>
-    </div>
+    <button
+      onClick={onClick}
+      aria-label="Open suite settings"
+      title="Suite Settings"
+      style={{
+        width: 30, height: 30, borderRadius: '50%', cursor: 'pointer',
+        background: open
+          ? 'var(--hub-amber)'
+          : 'color-mix(in srgb, var(--hub-amber) 15%, var(--hub-bg-2))',
+        border: `1.5px solid ${open ? 'var(--hub-amber)' : 'var(--hub-line-strong)'}`,
+        color: open ? 'var(--hub-bg-0)' : 'var(--hub-amber)',
+        fontFamily: 'var(--hub-font-mono)',
+        fontSize: 11, fontWeight: 700, letterSpacing: '0.03em',
+        display: 'grid', placeItems: 'center',
+        boxShadow: open ? '0 0 10px var(--hub-amber-glow)' : 'none',
+        transition: 'all 0.15s',
+      }}
+    >
+      <span style={{ fontSize: 14, lineHeight: 1 }}>⊙</span>
+    </button>
   );
 }
+

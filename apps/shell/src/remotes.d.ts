@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 /* Type declarations for Module Federation remote widgets.
    Each remote exposes a single default React component. */
 

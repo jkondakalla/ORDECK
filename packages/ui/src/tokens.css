@@ -1,7 +1,31 @@
-/* @hub/ui -- cassette futurism design tokens (ORDECK+ v2)
-   Single source of truth for the entire visual system. */
+/* @hub/ui -- ORDECK portal design tokens
+   --hub-* are ORDECK-specific; --color-* / --accent-* are the shared suite protocol. */
 
 :root {
+  /* ── Protocol variables (set at runtime by applyOrdeckTheme) ── */
+  --accent-base:      #ffb000;
+  --accent-secondary: #4ecdc4;
+
+  /* ── Shared suite token names (aliased from hub vars for panel components) ── */
+  --color-paper:          var(--hub-bg-0);
+  --color-paper-2:        var(--hub-bg-1);
+  --color-card:           var(--hub-bg-2);
+  --color-card-2:         var(--hub-bg-3);
+  --color-ink:            var(--hub-cream-bright);
+  --color-muted:          var(--hub-cream-dim);
+  --color-faint:          var(--hub-cream-faint);
+  --color-line:           var(--hub-line);
+  --color-line-strong:    var(--hub-line-strong);
+  --color-accent:         var(--hub-amber);
+  --color-accent-bright:  var(--hub-amber-bright);
+  --color-accent-dim:     var(--hub-amber-dim);
+  --color-accent-deep:    var(--hub-amber-deep);
+  --color-accent-glow:    var(--hub-amber-glow);
+  --color-accent-soft:    color-mix(in srgb, var(--hub-amber) 12%, var(--hub-bg-2));
+  --color-secondary:      var(--hub-cyan);
+  --color-secondary-dim:  var(--hub-cyan-dim);
+  --color-secondary-glow: var(--hub-cyan-glow);
+
   /* Background layers */
   --hub-bg-0: #11100d;
   --hub-bg-1: #1a1814;
@@ -72,10 +96,11 @@
   --hub-shadow-inset: inset 0 1px 0 var(--hub-bevel-light), inset 0 -1px 0 var(--hub-bevel-dark);
 
   /* Shell layout */
-  --hub-header-h: 64px;
+  --hub-header-h: 52px;
   --hub-bus-h: 28px;
   --hub-footer-h: 28px;
-  --hub-sidebar-w: 248px;
+  --hub-sidebar-w: 200px;
+  --hub-sidebar-collapsed: 40px;
   --hub-rail-w: 56px;
 
   /* CRT */
@@ -89,84 +114,4 @@
   --screw-display: inline-block;
 }
 
-/* ===== Phosphor color schemes ===== */
-:root[data-phosphor="green"]       { --hub-amber: #5cd66a; --hub-amber-bright: #aef0b6; --hub-amber-dim: #2f6b35; --hub-amber-deep: #143518; --hub-amber-glow: rgba(92,214,106,0.35); }
-:root[data-phosphor="cyan"]        { --hub-amber: #4ecdc4; --hub-amber-bright: #a5ece6; --hub-amber-dim: #2a6e6a; --hub-amber-deep: #143432; --hub-amber-glow: rgba(78,205,196,0.35); }
-:root[data-phosphor="redshift"]    { --hub-amber: #ff7a3a; --hub-amber-bright: #ffbb8c; --hub-amber-dim: #8a3a14; --hub-amber-deep: #4a1c08; --hub-amber-glow: rgba(255,122,58,0.35); }
-:root[data-phosphor="violet"]      { --hub-amber: #c08aff; --hub-amber-bright: #ddbaff; --hub-amber-dim: #5e3a8a; --hub-amber-deep: #2b1a48; --hub-amber-glow: rgba(192,138,255,0.35); }
-:root[data-phosphor="ice"]         { --hub-amber: #a8d8ff; --hub-amber-bright: #d8eaff; --hub-amber-dim: #4068a0; --hub-amber-deep: #182a48; --hub-amber-glow: rgba(168,216,255,0.35); }
-:root[data-phosphor="rose"]        { --hub-amber: #ff7a9a; --hub-amber-bright: #ffb4c8; --hub-amber-dim: #8a2e4a; --hub-amber-deep: #401522; --hub-amber-glow: rgba(255,122,154,0.35); }
-:root[data-phosphor="paperwhite"]  { --hub-amber: #f0e8d0; --hub-amber-bright: #fff8e0; --hub-amber-dim: #8a8267; --hub-amber-deep: #4a4632; --hub-amber-glow: rgba(240,232,208,0.3); }
-:root[data-phosphor="vt220"]       { --hub-amber: #ff9c2a; --hub-amber-bright: #ffce8a; --hub-amber-dim: #7a4a14; --hub-amber-deep: #3a210a; --hub-amber-glow: rgba(255,156,42,0.35); }
-:root[data-phosphor="p1"]          { --hub-amber: #65ff3e; --hub-amber-bright: #b8ffa0; --hub-amber-dim: #2f7a1e; --hub-amber-deep: #143a0e; --hub-amber-glow: rgba(101,255,62,0.32); }
-:root[data-phosphor="plasma"]      { --hub-amber: #ff7a14; --hub-amber-bright: #ffba70; --hub-amber-dim: #7a3a08; --hub-amber-deep: #401c03; --hub-amber-glow: rgba(255,122,20,0.38); }
-:root[data-phosphor="commodore"]   { --hub-amber: #a1a1ff; --hub-amber-bright: #d6d6ff; --hub-amber-dim: #4a4a8a; --hub-amber-deep: #1f1f48; --hub-amber-glow: rgba(161,161,255,0.32); }
-:root[data-phosphor="ibm-gold"]    { --hub-amber: #f4c14e; --hub-amber-bright: #ffe39a; --hub-amber-dim: #7a5e1a; --hub-amber-deep: #3a2c0a; --hub-amber-glow: rgba(244,193,78,0.35); }
-:root[data-phosphor="hotpink"]     { --hub-amber: #ff3aa1; --hub-amber-bright: #ff85c4; --hub-amber-dim: #8a1e58; --hub-amber-deep: #420c2a; --hub-amber-glow: rgba(255,58,161,0.4); }
-:root[data-phosphor="acid"]        { --hub-amber: #c5ff14; --hub-amber-bright: #e3ff7a; --hub-amber-dim: #5e7a08; --hub-amber-deep: #2a3a04; --hub-amber-glow: rgba(197,255,20,0.4); }
-:root[data-phosphor="magenta"]     { --hub-amber: #ff2bd6; --hub-amber-bright: #ff85ec; --hub-amber-dim: #7a1468; --hub-amber-deep: #3a0a30; --hub-amber-glow: rgba(255,43,214,0.4); }
-:root[data-phosphor="electric"]    { --hub-amber: #2eb3ff; --hub-amber-bright: #8ad6ff; --hub-amber-dim: #14588a; --hub-amber-deep: #082a42; --hub-amber-glow: rgba(46,179,255,0.4); }
-:root[data-phosphor="lime"]        { --hub-amber: #aeff1e; --hub-amber-bright: #d6ff7a; --hub-amber-dim: #527a14; --hub-amber-deep: #283a08; --hub-amber-glow: rgba(174,255,30,0.4); }
-:root[data-phosphor="mint"]        { --hub-amber: #5affc1; --hub-amber-bright: #b0ffd9; --hub-amber-dim: #1a7a55; --hub-amber-deep: #0a3a28; --hub-amber-glow: rgba(90,255,193,0.36); }
-:root[data-phosphor="solar"]       { --hub-amber: #ffd000; --hub-amber-bright: #ffe87a; --hub-amber-dim: #8a6a00; --hub-amber-deep: #423300; --hub-amber-glow: rgba(255,208,0,0.36); }
-:root[data-phosphor="coral"]       { --hub-amber: #ff6b5a; --hub-amber-bright: #ffaa9a; --hub-amber-dim: #8a2a1e; --hub-amber-deep: #421008; --hub-amber-glow: rgba(255,107,90,0.36); }
-:root[data-phosphor="crimson"]     { --hub-amber: #ff3a4e; --hub-amber-bright: #ff8a98; --hub-amber-dim: #7a1422; --hub-amber-deep: #3a080d; --hub-amber-glow: rgba(255,58,78,0.36); }
-:root[data-phosphor="pearl"]       { --hub-amber: #d8d4e8; --hub-amber-bright: #f0eef8; --hub-amber-dim: #6a6680; --hub-amber-deep: #2a2638; --hub-amber-glow: rgba(216,212,232,0.3); }
-:root[data-phosphor="aqua"]        { --hub-amber: #2efff2; --hub-amber-bright: #8af8f0; --hub-amber-dim: #148a82; --hub-amber-deep: #084240; --hub-amber-glow: rgba(46,255,242,0.36); }
-:root[data-phosphor="royal"]       { --hub-amber: #8a6bff; --hub-amber-bright: #b8a5ff; --hub-amber-dim: #3a2a7a; --hub-amber-deep: #1a1238; --hub-amber-glow: rgba(138,107,255,0.36); }
-:root[data-phosphor="sunset"]      { --hub-amber: #ff944a; --hub-amber-bright: #ffc28a; --hub-amber-dim: #8a4218; --hub-amber-deep: #421e08; --hub-amber-glow: rgba(255,148,74,0.35); }
-:root[data-phosphor="mercury"]     { --hub-amber: #c8cbd0; --hub-amber-bright: #e8eaee; --hub-amber-dim: #5a6068; --hub-amber-deep: #2a2e34; --hub-amber-glow: rgba(200,203,208,0.3); }
-:root[data-phosphor="tritium"]     { --hub-amber: #9affcb; --hub-amber-bright: #cdffe2; --hub-amber-dim: #2e8a5e; --hub-amber-deep: #143a28; --hub-amber-glow: rgba(154,255,203,0.32); }
-:root[data-phosphor="carbon"]      { --hub-amber: #6a6a6a; --hub-amber-bright: #a8a8a8; --hub-amber-dim: #3a3a3a; --hub-amber-deep: #1a1a1a; --hub-amber-glow: rgba(200,200,200,0.18); }
-
-/* ===== Shell tone schemes ===== */
-:root[data-shell="warm"]  { /* default */ }
-:root[data-shell="cool"]  { --hub-bg-0: #0e1014; --hub-bg-1: #161922; --hub-bg-2: #1f2330; --hub-bg-3: #29303f; --hub-line: #2a2f3c; --hub-line-strong: #3a4150; --hub-cream: #c8d0d8; --hub-cream-dim: #768090; --hub-cream-faint: #4a5260; }
-:root[data-shell="olive"] { --hub-bg-0: #11120e; --hub-bg-1: #1a1b14; --hub-bg-2: #22241a; --hub-bg-3: #2c2f22; --hub-line: #34372a; --hub-line-strong: #45493a; }
-:root[data-shell="ash"]   { --hub-bg-0: #131211; --hub-bg-1: #1c1b1a; --hub-bg-2: #252321; --hub-bg-3: #2e2c29; --hub-line: #3a3733; --hub-line-strong: #4a4642; --hub-cream: #c8c4be; --hub-cream-dim: #7c786f; --hub-cream-faint: #524d44; }
-:root[data-shell="deep"]  { --hub-bg-0: #0a0907; --hub-bg-1: #14110d; --hub-bg-2: #1d1812; --hub-bg-3: #261f17; }
-
-/* ===== Visual style modes ===== */
-
-/* CASSETTE — default warm hardware */
-:root[data-style="cassette"] { /* defaults */ }
-
-/* TERMINAL — pure text terminal */
-:root[data-style="terminal"] {
-  --hub-bg-0: #000000; --hub-bg-1: #050505; --hub-bg-2: #0a0a0a; --hub-bg-3: #111111; --hub-bg-4: #1a1a1a;
-  --hub-line: #1a1a1a; --hub-line-strong: #2a2a2a; --hub-line-bright: #404040;
-  --hub-cream: #c8c8c8; --hub-cream-dim: #707070; --hub-cream-faint: #404040;
-  --hub-font-mono: 'VT323', 'IBM Plex Mono', ui-monospace, monospace;
-  --hub-font-sans: 'VT323', 'IBM Plex Mono', ui-monospace, monospace;
-  --hub-font-seg:  'VT323', 'IBM Plex Mono', monospace;
-  --crt-scanline-opacity: 0.025; --crt-vignette-opacity: 0.7; --hub-glow-mul: 0.4;
-}
-
-/* CYBERDECK — angular notch cuts, heavy neon */
-:root[data-style="cyberdeck"] {
-  --hub-bg-0: #07070d; --hub-bg-1: #0d0c18; --hub-bg-2: #15142a; --hub-bg-3: #1f1d3c; --hub-bg-4: #2a2853;
-  --hub-line: #2c2a48; --hub-line-strong: #3a3858; --hub-line-bright: #5a5888;
-  --hub-cream: #d8d4f0; --hub-cream-dim: #7a78a0; --hub-cream-faint: #424068;
-  --hub-font-mono: 'Space Grotesk', 'IBM Plex Mono', ui-monospace, monospace;
-  --hub-font-sans: 'Space Grotesk', 'IBM Plex Sans', system-ui, sans-serif;
-  --hub-font-seg:  'Orbitron', 'Big Shoulders Display', sans-serif;
-  --crt-scanline-opacity: 0.016; --crt-vignette-opacity: 0.4; --hub-glow-mul: 1.8;
-  --hub-clip-widget: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
-  --hub-widget-pad: 14px; --hub-title-h: 36px;
-}
-
-/* HOLOGRAM — frosted glass, rounded */
-:root[data-style="hologram"] {
-  --hub-bg-0: #060914;
-  --hub-bg-1: rgba(255,255,255,0.04); --hub-bg-2: rgba(255,255,255,0.06);
-  --hub-bg-3: rgba(255,255,255,0.10); --hub-bg-4: rgba(255,255,255,0.14);
-  --hub-line: rgba(255,255,255,0.08); --hub-line-strong: rgba(255,255,255,0.18); --hub-line-bright: rgba(255,255,255,0.32);
-  --hub-cream: #e4ecff; --hub-cream-bright: #ffffff; --hub-cream-dim: #94a3c8; --hub-cream-faint: #5a6b8e;
-  --hub-font-mono: 'Inter', system-ui, sans-serif;
-  --hub-font-sans: 'Inter', system-ui, sans-serif;
-  --hub-font-seg:  'Space Grotesk', 'Inter', sans-serif;
-  --crt-scanline-opacity: 0; --crt-vignette-opacity: 0.2; --hub-glow-mul: 0.8;
-  --hub-radius-widget: 14px; --hub-radius-button: 8px;
-  --hub-widget-blur: blur(20px) saturate(140%);
-  --hub-widget-pad: 16px; --hub-title-h: 42px;
-}
+/* Accent colors are set at runtime by applyOrdeckTheme() via --accent-base / --accent-secondary */

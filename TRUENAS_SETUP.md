@@ -1,5 +1,7 @@
 # jkHUB · Standalone Subdomain Deployment Guide
 
+> **⚠️ DEPRECATED (2026-06-04):** Networks, nginx config paths, and deploy commands are outdated. See `infra/docs/DEPLOYMENT.md` for the current deployment reference.
+
 **Platform:** TrueNAS SCALE 25.04+  
 **Last updated:** 2026-05-29  
 **Status:** Infrastructure complete and committed — fill secrets, then follow steps

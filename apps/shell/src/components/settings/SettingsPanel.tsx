@@ -2,7 +2,6 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useState } from 'react';
 import { Led, Screw, Vent, LabelTape } from '../hardware';
 import type { Settings } from './types';
-import { PHOSPHOR_GROUPS, STYLES, SHELLS } from './data';
 import { SessionsPanel } from './SessionsPanel';
 import { TokensPanel } from './TokensPanel';
 
@@ -17,9 +16,9 @@ interface SettingsPanelProps {
 type Tab = 'config' | 'sessions' | 'tokens';
 
 const TABS: { id: Tab; label: string }[] = [
-  { id: 'config',   label: 'AESTHETICS' },
-  { id: 'sessions', label: 'SESSIONS'   },
-  { id: 'tokens',   label: 'API TOKENS' },
+  { id: 'config',   label: 'CANVAS'    },
+  { id: 'sessions', label: 'SESSIONS'  },
+  { id: 'tokens',   label: 'API TOKENS'},
 ];
 
 export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsPanelProps) {
@@ -42,7 +41,7 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
         top: 0,
         right: 0,
         height: '100vh',
-        width: 360,
+        width: 320,
         background: 'linear-gradient(180deg, var(--hub-bg-1) 0%, var(--hub-bg-2) 100%)',
         borderLeft: '1px solid var(--hub-line-strong)',
         boxShadow: '-12px 0 32px rgba(0,0,0,0.6)',
@@ -52,6 +51,7 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
         display: 'flex',
         flexDirection: 'column',
       }}>
+        {/* Header */}
         <div style={{
           height: 48,
           background: 'linear-gradient(180deg, var(--hub-bg-3), var(--hub-bg-1))',
@@ -71,21 +71,19 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
             letterSpacing: '0.18em',
             fontFamily: 'var(--hub-font-seg)',
           }} className="glow-dim">
-            {tab === 'config' ? 'CONFIG · AESTHETICS' : tab === 'sessions' ? 'CONFIG · SESSIONS' : 'CONFIG · API TOKENS'}
+            {tab === 'config'   ? 'CONFIG · CANVAS'   :
+             tab === 'sessions' ? 'CONFIG · SESSIONS'  :
+                                  'CONFIG · API TOKENS'}
           </span>
           <Vent slats={3} width={28} style={{ marginLeft: 'auto' }} />
           <button onClick={onClose} style={{
-            width: 20,
-            height: 20,
+            width: 20, height: 20,
             background: 'var(--hub-bg-0)',
             border: '1px solid var(--hub-line-strong)',
             color: 'var(--hub-cream-dim)',
             cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: 10,
-            padding: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 10, padding: 0,
           }}>✕</button>
           <Screw size={7} rot={-22} />
         </div>
@@ -115,6 +113,7 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
           ))}
         </div>
 
+        {/* Content */}
         <div style={{
           flex: 1,
           overflow: 'auto',
@@ -124,39 +123,10 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
           gap: 18,
         }}>
           {tab === 'sessions' ? <SessionsPanel /> :
-           tab === 'tokens'   ? <TokensPanel /> :
+           tab === 'tokens'   ? <TokensPanel />  :
            (
             <>
-              <SettingsSection title="VISUAL STYLE" code="01">
-                <StyleGrid
-                  options={STYLES}
-                  value={settings.style}
-                  onChange={v => set('style', v as Settings['style'])}
-                />
-              </SettingsSection>
-
-              <SettingsSection title="PHOSPHOR · COLOR" code="02">
-                {PHOSPHOR_GROUPS.map(g => (
-                  <PhosphorGroup
-                    key={g.title}
-                    title={g.title}
-                    items={g.items}
-                    value={settings.phosphor}
-                    onChange={v => set('phosphor', v)}
-                  />
-                ))}
-              </SettingsSection>
-
-              <SettingsSection title="SHELL · TONE" code="03">
-                <SwatchGrid
-                  options={SHELLS}
-                  value={settings.shell}
-                  onChange={v => set('shell', v as Settings['shell'])}
-                  cols={5}
-                />
-              </SettingsSection>
-
-              <SettingsSection title="CRT · EFFECTS" code="04">
+              <SettingsSection title="CRT · EFFECTS" code="01">
                 <SettingsSlider
                   label="SCANLINES"
                   value={settings.scanlines}
@@ -180,14 +150,14 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
                 />
               </SettingsSection>
 
-              <SettingsSection title="HARDWARE" code="05">
+              <SettingsSection title="HARDWARE" code="02">
                 <SettingsToggle label="BOLD GLOW"        hint="thicker phosphor halo"    value={settings.boldGlow}    onChange={v => set('boldGlow', v)} />
                 <SettingsToggle label="WIDGET SCREWS"    hint="show panel hardware"      value={settings.showScrews}  onChange={v => set('showScrews', v)} />
                 <SettingsToggle label="SYSTEM BUS STRIP" hint="top telemetry waveform"   value={settings.showBus}     onChange={v => set('showBus', v)} />
                 <SettingsToggle label="RIGHT VU RAIL"    hint="meters + knobs panel"     value={settings.showRail}    onChange={v => set('showRail', v)} />
               </SettingsSection>
 
-              <SettingsSection title="RESET" code="06">
+              <SettingsSection title="RESET" code="03">
                 <ResetButton onReset={reset} />
               </SettingsSection>
 
@@ -203,7 +173,7 @@ export function SettingsPanel({ open, onClose, settings, set, reset }: SettingsP
                 letterSpacing: '0.15em',
               }}>
                 <Led color="green" size="sm" />
-                SETTINGS PERSIST IN BROWSER · LOCALSTORAGE
+                CANVAS SETTINGS PERSIST IN BROWSER
               </div>
             </>
           )}
@@ -226,193 +196,6 @@ function SettingsSection({ title, code, children }: { title: string; code: strin
       <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
         {children}
       </div>
-    </div>
-  );
-}
-
-function StyleGrid({ options, value, onChange }: {
-  options: typeof STYLES;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5 }}>
-      {options.map(o => {
-        const active = value === o.id;
-        return (
-          <button key={o.id} onClick={() => onChange(o.id)}
-            onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.borderColor = 'var(--hub-amber-dim)'; }}
-            onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.borderColor = 'var(--hub-line)'; }}
-            style={{
-              background: active ? `linear-gradient(135deg, ${o.accent}, var(--hub-bg-2))` : 'var(--hub-bg-2)',
-              border: `1px solid ${active ? o.swatch : 'var(--hub-line)'}`,
-              padding: '8px 10px',
-              display: 'grid',
-              gridTemplateColumns: '14px 1fr',
-              gap: 10,
-              alignItems: 'center',
-              textAlign: 'left',
-              cursor: 'pointer',
-              transition: 'all 0.12s',
-              boxShadow: active ? `inset 0 0 8px ${o.swatch}33` : 'none',
-              position: 'relative',
-              minHeight: 44,
-            }}
-          >
-            <span style={{
-              width: 14, height: 14,
-              background: o.swatch,
-              boxShadow: active ? `0 0 8px ${o.swatch}` : `0 0 3px ${o.swatch}55`,
-              border: '1px solid rgba(0,0,0,0.4)',
-            }} />
-            <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2, gap: 2 }}>
-              <span style={{
-                fontSize: 10, letterSpacing: '0.14em', fontWeight: 600,
-                color: active ? 'var(--hub-amber)' : 'var(--hub-cream)',
-                fontFamily: 'var(--hub-font-mono)',
-              }}>{o.label}</span>
-              <span style={{
-                fontSize: 7.5, color: 'var(--hub-cream-faint)', letterSpacing: '0.12em',
-              }}>{o.desc}</span>
-            </span>
-            {active && (
-              <span style={{
-                position: 'absolute', top: 3, right: 4,
-                fontSize: 7, color: o.swatch, letterSpacing: '0.1em',
-              }}>●</span>
-            )}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function PhosphorGroup({ title, items, value, onChange }: {
-  title: string;
-  items: { id: string; label: string; swatch: string }[];
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div style={{ marginBottom: 4 }}>
-      <div style={{
-        fontSize: 7, letterSpacing: '0.25em',
-        color: 'var(--hub-cream-faint)',
-        marginBottom: 5, padding: '2px 0',
-      }}>· {title}</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 3 }}>
-        {items.map(o => {
-          const active = value === o.id;
-          return (
-            <button key={o.id} onClick={() => onChange(o.id)} title={o.label}
-              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.borderColor = o.swatch + '88'; }}
-              onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.borderColor = 'var(--hub-line)'; }}
-              style={{
-                background: active ? 'var(--hub-bg-0)' : 'var(--hub-bg-2)',
-                border: `1px solid ${active ? o.swatch : 'var(--hub-line)'}`,
-                padding: '6px 4px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                cursor: 'pointer', transition: 'all 0.12s',
-                boxShadow: active ? `inset 0 0 8px ${o.swatch}44` : 'none',
-                position: 'relative',
-              }}
-            >
-              <div style={{
-                width: 16, height: 16,
-                background: o.swatch,
-                borderRadius: '50%',
-                border: '1px solid rgba(0,0,0,0.5)',
-                boxShadow: active ? `0 0 8px ${o.swatch}` : `0 0 3px ${o.swatch}66`,
-                position: 'relative',
-              }}>
-                <span style={{
-                  position: 'absolute', inset: 0,
-                  background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.5), transparent 55%)',
-                  borderRadius: '50%',
-                }} />
-              </div>
-              <span style={{
-                fontSize: 6.5, letterSpacing: '0.06em',
-                color: active ? 'var(--hub-amber)' : 'var(--hub-cream-dim)',
-                fontFamily: 'var(--hub-font-mono)',
-                lineHeight: 1, textAlign: 'center',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                maxWidth: '100%',
-              }}>{o.label}</span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function SwatchGrid({ options, value, onChange, cols = 4 }: {
-  options: typeof SHELLS;
-  value: string;
-  onChange: (v: string) => void;
-  cols?: number;
-}) {
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 4 }}>
-      {options.map(o => {
-        const active = value === o.id;
-        return (
-          <button key={o.id} onClick={() => onChange(o.id)}
-            onMouseEnter={e => {
-              if (!active) {
-                const el = e.currentTarget as HTMLElement;
-                el.style.borderColor = 'var(--hub-amber-dim)';
-                el.style.background = 'var(--hub-bg-3)';
-              }
-            }}
-            onMouseLeave={e => {
-              if (!active) {
-                const el = e.currentTarget as HTMLElement;
-                el.style.borderColor = 'var(--hub-line)';
-                el.style.background = 'var(--hub-bg-2)';
-              }
-            }}
-            style={{
-              background: active ? 'var(--hub-bg-0)' : 'var(--hub-bg-2)',
-              border: `1px solid ${active ? 'var(--hub-amber)' : 'var(--hub-line)'}`,
-              padding: '8px 6px',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5,
-              cursor: 'pointer', transition: 'all 0.12s',
-              boxShadow: active ? 'inset 0 0 6px var(--hub-amber-glow)' : 'none',
-              position: 'relative',
-            }}
-          >
-            <div style={{
-              width: 22, height: 22,
-              background: o.swatch,
-              border: '1px solid rgba(0,0,0,0.4)',
-              boxShadow: active ? `0 0 10px ${o.swatch}` : `0 0 4px ${o.swatch}66`,
-              borderRadius: '50%',
-              position: 'relative',
-            }}>
-              <span style={{
-                position: 'absolute', inset: 0,
-                background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.5), transparent 50%)',
-                borderRadius: '50%',
-              }} />
-            </div>
-            <span style={{
-              fontSize: 7.5, letterSpacing: '0.1em',
-              color: active ? 'var(--hub-amber)' : 'var(--hub-cream)',
-              lineHeight: 1.1, textAlign: 'center',
-              fontFamily: 'var(--hub-font-mono)',
-            }}>{o.label}</span>
-            {active && (
-              <span style={{
-                position: 'absolute', top: 3, right: 4,
-                fontSize: 7, color: 'var(--hub-amber)', letterSpacing: '0.1em',
-              }} className="glow-dim">●</span>
-            )}
-          </button>
-        );
-      })}
     </div>
   );
 }
@@ -534,7 +317,7 @@ function SettingsToggle({ label, hint, value, onChange }: {
 
 function ResetButton({ onReset }: { onReset: () => void }) {
   const handleReset = () => {
-    if (window.confirm('Reset all aesthetic settings?')) onReset();
+    if (window.confirm('Reset canvas settings?')) onReset();
   };
   return (
     <button
@@ -562,6 +345,6 @@ function ResetButton({ onReset }: { onReset: () => void }) {
         cursor: 'pointer',
         transition: 'all 0.12s',
       } as CSSProperties}
-    >⌫ RESTORE FACTORY DEFAULTS</button>
+    >⌫ RESTORE DEFAULTS</button>
   );
 }

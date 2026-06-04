@@ -1,5 +1,7 @@
 # ORDECK · TrueNAS SCALE Deployment Guide
 
+> **⚠️ DEPRECATED (2026-06-04):** `ordeck-net` and the standalone ORDECK nginx are gone. ORDECK now uses `jkos-internal` and is served by `standalone-nginx`. See `ORDECK/docs/ORDECK.md` and `infra/docs/DEPLOYMENT.md`.
+
 **Platform:** TrueNAS SCALE 25.04+
 **Last updated:** 2026-05-28
 **Status:** Auth migrated to jkOS Auth (RS256). `services/auth-api/` is deprecated — do not deploy.

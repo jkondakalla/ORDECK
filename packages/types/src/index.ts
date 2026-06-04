@@ -44,6 +44,7 @@ export interface WidgetInstance {
 }
 
 export type WidgetType =
+  | 'apps'
   | 'clock'
   | 'plugins'
   | 'connections'

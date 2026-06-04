@@ -20,9 +20,6 @@ export function useSettings(): [Settings, (k: keyof Settings, v: Settings[keyof 
 
   useEffect(() => {
     const r = document.documentElement;
-    r.setAttribute('data-phosphor', s.phosphor || 'amber');
-    r.setAttribute('data-style', s.style || 'cassette');
-    r.setAttribute('data-shell', s.shell || 'warm');
     r.style.setProperty('--crt-scanline-opacity', String(s.scanlines));
     r.style.setProperty('--crt-vignette-opacity', String(s.vignette));
     r.style.setProperty('--canvas-grid-opacity', String(s.gridDensity));

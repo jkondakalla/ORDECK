@@ -1,15 +1,15 @@
+name: jkos-prod-ordeck
 services:
-  shell:
+  ordeck-shell:
     build:
       context: ../..
       dockerfile: docker/shell/Dockerfile
     container_name: ordeck-shell
     restart: unless-stopped
-    ports:
-      - "3000:80"
     networks:
-      - ordeck-net
+      - jkos-internal
 
 networks:
-  ordeck-net:
+  jkos-internal:
     external: true
+    name: jkos-internal

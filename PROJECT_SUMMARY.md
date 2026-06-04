@@ -1,5 +1,7 @@
 # jkHUB — Project Summary
 
+> **⚠️ DEPRECATED (2026-06-04):** This document reflects the pre-integration state. Networks (`bb-net`, `sylibos-net`, etc.), nginx config paths, and deployment commands are all outdated. See `infra/docs/SYSTEM.md`, `infra/docs/DEPLOYMENT.md`, and `ORDECK/docs/ORDECK.md` for current architecture.
+
 **Date:** 2026-05-25  
 **Status:** All apps implemented and deployed as standalone subdomains; ORDECK unified portal ready for final bring-up
 
