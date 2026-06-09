@@ -23,9 +23,9 @@ export interface ActiveSession {
 interface Props {
   registry?: PaletteEntry[];
   sessions?: ActiveSession[];
-  collapsed?: boolean;
-  onToggle?: () => void;
-  onAddWidget: (type: WidgetType) => void;
+  active: boolean;
+  onAdd: (type: WidgetType) => void;
+  onClose: () => void;
   onResetLayout: () => void;
   onClearAll: () => void;
 }
@@ -33,103 +33,107 @@ interface Props {
 export default function WidgetPalette({
   registry = [],
   sessions = [],
-  collapsed = false,
-  onToggle,
-  onAddWidget,
+  active,
+  onAdd,
+  onClose,
   onResetLayout,
   onClearAll,
 }: Props) {
-  const shell   = registry.filter(d => !d.remote && !d.tool && !d.deco);
+  const core    = registry.filter(d => !d.remote && !d.tool && !d.deco);
   const tools   = registry.filter(d => d.tool);
   const deco    = registry.filter(d => d.deco);
   const remotes = registry.filter(d => d.remote);
 
   return (
-    <aside style={{
-      width: collapsed ? 'var(--hub-sidebar-collapsed, 40px)' : 'var(--hub-sidebar-w)',
-      background: 'linear-gradient(90deg, var(--hub-bg-2) 0%, var(--hub-bg-1) 100%)',
-      borderRight: '1px solid var(--hub-line)',
-      overflowY: collapsed ? 'hidden' : 'auto',
-      overflowX: 'hidden',
-      flexShrink: 0,
-      position: 'relative',
-      transition: 'width 0.22s cubic-bezier(0.4, 0.2, 0.2, 1)',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Collapse toggle */}
-      <button
-        onClick={onToggle}
-        title={collapsed ? 'Expand widget palette' : 'Collapse widget palette'}
+    <>
+      {/* Backdrop — click to close */}
+      <div
+        onClick={active ? onClose : undefined}
         style={{
-          width: '100%', height: 36, flexShrink: 0,
-          display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-end',
-          padding: collapsed ? 0 : '0 12px',
-          background: 'transparent', border: 'none',
-          borderBottom: '1px solid var(--hub-line)',
-          color: 'var(--hub-cream-faint)', cursor: 'pointer',
-          fontFamily: 'var(--hub-font-mono)', fontSize: 10,
-          transition: 'color 0.12s',
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 199,
+          opacity: active ? 1 : 0,
+          pointerEvents: active ? 'auto' : 'none',
+          transition: 'opacity 0.22s',
         }}
-        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--hub-amber)'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--hub-cream-faint)'; }}
-      >
-        {collapsed ? '›' : '‹'}
-      </button>
+      />
 
-      {/* When collapsed: just glyphs */}
-      {collapsed ? (
-        <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-          {registry.map(def => (
-            <button key={def.type} onClick={() => onAddWidget(def.type)} title={def.label}
-              style={{
-                width: 36, height: 30,
-                background: 'transparent', border: 'none', cursor: 'pointer',
-                fontSize: 13, color: `${def.color}aa`,
-                display: 'grid', placeItems: 'center',
-                transition: 'color 0.12s',
-              }}
-              onMouseEnter={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.color = def.color;
-                el.style.textShadow = `0 0 6px ${def.color}`;
-              }}
-              onMouseLeave={e => {
-                const el = e.currentTarget as HTMLElement;
-                el.style.color = `${def.color}aa`;
-                el.style.textShadow = 'none';
-              }}
-            >
-              {def.glyph}
-            </button>
-          ))}
+      {/* Drawer */}
+      <aside
+        aria-hidden={!active}
+        style={{
+          position: 'fixed',
+          top: 'var(--hub-header-h)',
+          left: 0,
+          bottom: 'var(--hub-footer-h)',
+          width: 'var(--hub-sidebar-w)',
+          background: 'linear-gradient(90deg, var(--hub-bg-2) 0%, var(--hub-bg-1) 100%)',
+          borderRight: '1px solid var(--hub-line)',
+          overflowY: 'hidden',
+          overflowX: 'hidden',
+          flexShrink: 0,
+          zIndex: 200,
+          display: 'flex', flexDirection: 'column',
+          transform: active ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.22s cubic-bezier(0.4, 0.2, 0.2, 1)',
+        }}
+      >
+        {/* Drawer header rail */}
+        <div style={{
+          height: 36, flexShrink: 0,
+          display: 'flex', alignItems: 'center',
+          padding: '0 12px', gap: 8,
+          borderBottom: '1px solid var(--hub-line)',
+        }}>
+          <Led color="amber" size="sm" />
+          <span style={{
+            fontSize: 8, letterSpacing: '0.22em',
+            color: 'var(--hub-amber)', flex: 1,
+            fontFamily: 'var(--hub-font-mono)',
+          }}>
+            MODULE PALETTE
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              color: 'var(--hub-cream-faint)', fontSize: 16, lineHeight: 1,
+              padding: '0 4px', fontFamily: 'var(--hub-font-mono)',
+              transition: 'color 0.12s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = 'var(--hub-amber)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = 'var(--hub-cream-faint)'; }}
+          >×</button>
         </div>
-      ) : (
+
+        {/* Scrollable content */}
         <div style={{ padding: '12px 0 60px', flex: 1, overflowY: 'auto' }}>
-          {shell.length > 0 && (
+          {core.length > 0 && (
             <Section title="CORE">
-              {shell.map(def => (
-                <ModuleSlot key={def.type} def={def} onAdd={() => onAddWidget(def.type)} />
+              {core.map(def => (
+                <ModuleSlot key={def.type} def={def} onAdd={() => { onAdd(def.type); onClose(); }} />
               ))}
             </Section>
           )}
           {tools.length > 0 && (
             <Section title="TOOLS">
               {tools.map(def => (
-                <ModuleSlot key={def.type} def={def} onAdd={() => onAddWidget(def.type)} />
+                <ModuleSlot key={def.type} def={def} onAdd={() => { onAdd(def.type); onClose(); }} />
               ))}
             </Section>
           )}
           {deco.length > 0 && (
             <Section title="DECO">
               {deco.map(def => (
-                <ModuleSlot key={def.type} def={def} onAdd={() => onAddWidget(def.type)} />
+                <ModuleSlot key={def.type} def={def} onAdd={() => { onAdd(def.type); onClose(); }} />
               ))}
             </Section>
           )}
           {remotes.length > 0 && (
             <Section title="REMOTE">
               {remotes.map(def => (
-                <ModuleSlot key={def.type} def={def} onAdd={() => onAddWidget(def.type)} remote />
+                <ModuleSlot key={def.type} def={def} onAdd={() => { onAdd(def.type); onClose(); }} remote />
               ))}
             </Section>
           )}
@@ -158,8 +162,8 @@ export default function WidgetPalette({
             <SystemButton onClick={onClearAll} label="CLEAR" />
           </div>
         </div>
-      )}
-    </aside>
+      </aside>
+    </>
   );
 }
 
@@ -179,7 +183,10 @@ function ModuleSlot({ def, onAdd, remote }: { def: PaletteEntry; onAdd: () => vo
   const [hover, setHover] = useState(false);
   const ledColor = def.led ?? (remote ? 'amber' : 'green');
   return (
-    <button onClick={onAdd} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+    <button
+      onClick={onAdd}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       style={{
         width: '100%',
         background: hover ? 'var(--hub-bg-3)' : 'var(--hub-bg-2)',
@@ -195,7 +202,11 @@ function ModuleSlot({ def, onAdd, remote }: { def: PaletteEntry; onAdd: () => vo
       <span style={{ fontSize: 13, color: hover ? def.color : `${def.color}aa`, textShadow: hover ? `0 0 6px ${def.color}` : 'none', textAlign: 'center' }}>{def.glyph}</span>
       <span style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
         <span style={{ fontWeight: 500 }}>{def.label}</span>
-        {def.subtitle && <span style={{ fontSize: 7.5, color: hover ? 'var(--hub-amber-dim)' : 'var(--hub-cream-faint)', letterSpacing: '0.15em' }}>{def.subtitle}</span>}
+        {def.subtitle && (
+          <span style={{ fontSize: 7.5, color: hover ? 'var(--hub-amber-dim)' : 'var(--hub-cream-faint)', letterSpacing: '0.15em' }}>
+            {def.subtitle}
+          </span>
+        )}
       </span>
       <Led color={ledColor} size="sm" steady={!remote} />
     </button>
@@ -204,7 +215,8 @@ function ModuleSlot({ def, onAdd, remote }: { def: PaletteEntry; onAdd: () => vo
 
 function SystemButton({ label, onClick }: { label: string; onClick: () => void }) {
   return (
-    <button onClick={onClick}
+    <button
+      onClick={onClick}
       style={{
         flex: 1, padding: '6px 8px',
         background: 'var(--hub-bg-0)', border: '1px solid var(--hub-line)',

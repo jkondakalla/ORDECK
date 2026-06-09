@@ -29,6 +29,8 @@ interface HeaderProps {
   aiOpen?: boolean;
   onOpenProfile?: () => void;
   profileOpen?: boolean;
+  onOpenPalette?: () => void;
+  paletteOpen?: boolean;
 }
 
 export default function Header({
@@ -39,6 +41,8 @@ export default function Header({
   aiOpen = false,
   onOpenProfile,
   profileOpen = false,
+  onOpenPalette,
+  paletteOpen = false,
 }: HeaderProps) {
   const utc = useUTCClock();
   const count = widgetCount;
@@ -115,6 +119,22 @@ export default function Header({
             fontFamily: 'var(--hub-font-seg)',
           }} className="glow">{utc || '00:00:00'}</span>
         </div>
+        {onOpenPalette && (
+          <button
+            onClick={onOpenPalette}
+            title="Widget Palette"
+            style={{
+              background: paletteOpen ? 'color-mix(in srgb, var(--hub-amber) 15%, transparent)' : 'transparent',
+              border: `1px solid ${paletteOpen ? 'var(--hub-amber-dim)' : 'var(--hub-line)'}`,
+              color: paletteOpen ? 'var(--hub-amber)' : 'var(--hub-cream-dim)',
+              fontFamily: 'var(--hub-font-mono)',
+              fontSize: 13, width: 32, height: 32,
+              cursor: 'pointer', display: 'grid', placeItems: 'center',
+              boxShadow: paletteOpen ? '0 0 8px var(--hub-amber-glow)' : 'none',
+              transition: 'all 0.15s',
+            }}
+          >⊞</button>
+        )}
         {onOpenAI && (
           <button
             onClick={onOpenAI}

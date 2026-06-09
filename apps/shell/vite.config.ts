@@ -1,6 +1,7 @@
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import federation from '@originjs/vite-plugin-federation';
+import path from 'path';
 
 // In development:  plugins served on localhost:300x
 // In production:   plugins served via nginx at https://YOUR_DOMAIN/plugins/xxx/
@@ -48,6 +49,7 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@hub/ui':    '../../packages/ui/src',
         '@hub/types': '../../packages/types/src/index.ts',
+        '@design':    path.resolve(__dirname, '../../../Design'),
       },
     },
     server: {

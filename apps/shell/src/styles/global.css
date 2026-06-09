@@ -1,4 +1,5 @@
-/* Shell global -- @hub/ui tokens are the single source of truth */
+/* Shell global — @hub/ui/tokens.css → @design/tokens/hub.css is the single source of truth.
+   This file contains only ORDECK shell-specific styles. */
 @import '@hub/ui/tokens.css';
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,7 +17,7 @@ html, body {
   touch-action: manipulation;
 }
 
-/* === CRT overlays (driven by CSS vars, togglable) === */
+/* CRT scanline overlay — driven by --crt-scanline-opacity (0 in paper mode) */
 body::before {
   content: '';
   position: fixed; inset: 0;
@@ -30,6 +31,8 @@ body::before {
   pointer-events: none;
   z-index: 9999;
 }
+
+/* CRT vignette overlay */
 body::after {
   content: '';
   position: fixed; inset: 0;
@@ -42,149 +45,50 @@ button { font: inherit; background: none; color: inherit; cursor: pointer; borde
 input, textarea { font-family: var(--hub-font-mono); color: var(--hub-cream); }
 a { color: inherit; text-decoration: none; }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--hub-bg-1); }
-::-webkit-scrollbar-thumb { background: var(--hub-line-strong); }
-::-webkit-scrollbar-thumb:hover { background: var(--hub-amber-dim); }
-
-/* === LEDs === */
-.led {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 6px currentColor, inset 0 0 2px rgba(0,0,0,0.4);
-  animation: led-pulse 2.4s ease-in-out infinite;
-  flex-shrink: 0;
-}
-.led.green { background: var(--hub-green); color: var(--hub-green); }
-.led.amber { background: var(--hub-amber); color: var(--hub-amber); }
-.led.red   { background: var(--hub-red);   color: var(--hub-red);   animation-duration: 1s; }
-.led.cyan  { background: var(--hub-cyan);  color: var(--hub-cyan); }
-.led.off   { background: #2a2620;          color: #2a2620;          box-shadow: inset 0 0 2px rgba(0,0,0,0.6); animation: none; }
-.led.steady { animation: none; }
-.led.sm { width: 6px; height: 6px; }
-.led.lg { width: 12px; height: 12px; }
-
-@keyframes led-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
-@keyframes blink { 50% { opacity: 0; } }
-@keyframes data-flicker { 0%, 92%, 100% { opacity: 1; } 94% { opacity: 0.6; } 96% { opacity: 0.95; } }
-@keyframes reel-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* === ORDECK animation classes === */
+@keyframes spin          { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes reel-spin     { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes ticker-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-@keyframes bootIn { to { opacity: 1; } }
-
-/* === Hardware bits === */
-.screw {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #6a5d3e 0%, #3a342b 60%, #1a1612 100%);
-  box-shadow: inset 0 0 2px rgba(0,0,0,0.8), 0 0 1px rgba(0,0,0,0.6);
-  position: relative;
-  flex-shrink: 0;
-  display: var(--screw-display, inline-block);
+@keyframes crtExpand {
+  0%   { clip-path: inset(49.5% 0 49.5% 0); filter: brightness(6); }
+  9%   { clip-path: inset(0% 0 0% 0);        filter: brightness(2.2); }
+  16%  { clip-path: inset(1.2% 0 1.2% 0);   filter: brightness(0.55); }
+  24%  { clip-path: inset(0% 0 0% 0);        filter: brightness(1.5); }
+  33%  { filter: brightness(0.75); }
+  42%  { filter: brightness(1.15); }
+  54%  { filter: brightness(0.9); }
+  68%  { filter: brightness(1.05); }
+  100% { filter: brightness(1); clip-path: inset(0% 0 0% 0); }
 }
-.screw::after {
-  content: '';
-  position: absolute;
-  left: 1px; right: 1px;
-  top: 50%;
-  height: 1px;
-  background: rgba(0,0,0,0.85);
-  transform: translateY(-50%) rotate(var(--screw-rot, 25deg));
+@keyframes introTitleReveal {
+  from { opacity: 0; transform: translateY(6px); filter: blur(3px); }
+  to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
 }
-.screw.sm { width: 7px; height: 7px; }
-
-.vent {
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 4px 6px;
-  background: var(--hub-bg-0);
-  border: 1px solid var(--hub-line);
-}
-.vent > i {
-  display: block;
-  height: 2px;
-  background: var(--hub-bg-2);
-  border-top: 1px solid rgba(0,0,0,0.6);
+@keyframes introFadeOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes fadeSlideUp  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes pulseOpacity { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes checkBounce  { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+@keyframes panelIn      { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes itemIn       { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes modalIn      { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+@keyframes scanRoll     { from { background-position: 0 0; } to { background-position: 0 -4px; } }
+@keyframes scanPulse    { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+@keyframes artifactFlash {
+  0%   { opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
-.label-tape {
-  display: inline-block;
-  background: linear-gradient(180deg, #3a342b, #2a2620);
-  color: var(--hub-cream);
-  padding: 3px 8px;
-  font-family: var(--hub-font-mono);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  border: 1px solid #1a1612;
-  box-shadow: inset 0 1px 0 rgba(255,220,160,0.08), 0 1px 0 rgba(0,0,0,0.6);
-}
+.view-enter   { animation: fadeSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.panel-enter  { animation: panelIn     0.34s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.item-in      { animation: itemIn      0.26s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.modal-in     { animation: modalIn     0.22s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.crt-expand   { animation: crtExpand 0.55s ease-out both; }
+.intro-title  { animation: introTitleReveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.intro-out    { animation: introFadeOut 0.45s ease-in forwards; }
+.now-dot      { animation: pulseOpacity 1.8s ease-in-out infinite; }
+.check-pop    { animation: checkBounce 0.25s ease-out; }
 
-.dymo-tape {
-  display: inline-block;
-  background: #1f1c16;
-  color: var(--hub-cream-bright, #efe6c9);
-  padding: 3px 10px;
-  font-family: var(--hub-font-mono);
-  font-size: 10px;
-  letter-spacing: 0.3em;
-  font-weight: 600;
-  position: relative;
-  text-shadow: 0 -1px 0 rgba(0,0,0,0.8);
-}
-.dymo-tape::before, .dymo-tape::after {
-  content: '';
-  position: absolute; top: 0; bottom: 0;
-  width: 4px;
-  background: radial-gradient(circle at center, #11100d 1.4px, transparent 1.6px);
-  background-size: 4px 4px;
-  background-repeat: repeat-y;
-}
-.dymo-tape::before { left: 0; }
-.dymo-tape::after { right: 0; }
-
-.perf {
-  background: var(--hub-bg-0);
-  background-image: radial-gradient(circle, #11100d 1.2px, var(--hub-bg-2) 1.4px);
-  background-size: 6px 6px;
-}
-
-/* === 7-segment glow text === */
-.seg {
-  font-family: var(--hub-font-seg);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  font-variant-numeric: tabular-nums;
-  color: var(--hub-amber);
-  text-shadow: 0 0 8px var(--hub-amber-glow), 0 0 2px var(--hub-amber-glow);
-}
-
-/* === Bar meters === */
-.bar-track {
-  background: var(--hub-bg-0);
-  border: 1px solid var(--hub-line);
-  position: relative;
-  overflow: hidden;
-}
-.bar-fill {
-  background: linear-gradient(90deg, var(--hub-amber-dim), var(--hub-amber));
-  box-shadow: 0 0 4px var(--hub-amber-glow);
-  height: 100%;
-}
-
-/* === Phosphor text glow === */
-.glow { text-shadow: 0 0 6px var(--hub-amber-glow), 0 0 2px var(--hub-amber-glow); }
-.glow-dim { text-shadow: 0 0 4px var(--hub-amber-glow); }
-
-/* utility */
-.mono-eyebrow {
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  color: var(--hub-cream-dim);
-  text-transform: uppercase;
-}
-
-/* selection */
-::selection { background: var(--hub-amber-dim); color: var(--hub-cream-bright, #efe6c9); }
-
-/* allow text selection in widget content */
+/* Allow text selection inside widget content */
 .selectable, .selectable * { user-select: text; }
-

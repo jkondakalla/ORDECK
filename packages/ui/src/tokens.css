@@ -1,12 +1,23 @@
-/* @hub/ui -- ORDECK portal design tokens
-   --hub-* are ORDECK-specific; --color-* / --accent-* are the shared suite protocol. */
+/* @hub/ui — ORDECK design tokens
+   Single source of truth: Design/tokens/hub.css defines all --hub-* variables.
+   ORDECK-specific extensions (layout, CRT, widget tuning) remain here. */
 
+@import '@design/tokens/hub.css';
+
+/* ── ORDECK keeps the amber-first dark identity as its base dark accent ── */
+/* (No override needed — hub.css dark mode already defaults to #ffb000)    */
+
+/* ── CRT overlay controls — 0 in paper mode, JS sets scan opacity in dark ── */
 :root {
-  /* ── Protocol variables (set at runtime by applyOrdeckTheme) ── */
-  --accent-base:      #ffb000;
-  --accent-secondary: #4ecdc4;
+  --crt-scanline-opacity: 0;
+  --crt-vignette-opacity: 0;
+}
+:root[data-mode="dark"] {
+  --crt-vignette-opacity: 0.5;
+}
 
-  /* ── Shared suite token names (aliased from hub vars for panel components) ── */
+/* ── Backward-compat aliases for ORDECK panel / settings components ───── */
+:root {
   --color-paper:          var(--hub-bg-0);
   --color-paper-2:        var(--hub-bg-1);
   --color-card:           var(--hub-bg-2);
@@ -25,93 +36,4 @@
   --color-secondary:      var(--hub-cyan);
   --color-secondary-dim:  var(--hub-cyan-dim);
   --color-secondary-glow: var(--hub-cyan-glow);
-
-  /* Background layers */
-  --hub-bg-0: #11100d;
-  --hub-bg-1: #1a1814;
-  --hub-bg-2: #232019;
-  --hub-bg-3: #2c2820;
-  --hub-bg-4: #38321f;
-
-  /* Hardware tones */
-  --hub-metal-0: #2a2620;
-  --hub-metal-1: #3a342b;
-  --hub-metal-2: #4a4234;
-  --hub-bevel-light: rgba(255, 220, 160, 0.06);
-  --hub-bevel-dark:  rgba(0, 0, 0, 0.5);
-
-  /* Border lines */
-  --hub-line: #3a3528;
-  --hub-line-strong: #4a4232;
-  --hub-line-bright: #6a5d3e;
-
-  /* Phosphor palette */
-  --hub-amber: #ffb000;
-  --hub-amber-bright: #ffd266;
-  --hub-amber-dim: #8a5f00;
-  --hub-amber-deep: #4a3300;
-  --hub-amber-glow: rgba(255, 176, 0, 0.35);
-
-  /* Accents */
-  --hub-cyan: #4ecdc4;
-  --hub-cyan-dim: #2a6e6a;
-  --hub-cyan-glow: rgba(78, 205, 196, 0.35);
-  --hub-red: #ff4530;
-  --hub-red-dim: #6b1c14;
-  --hub-red-glow: rgba(255, 69, 48, 0.4);
-  --hub-green: #5cd66a;
-  --hub-green-glow: rgba(92, 214, 106, 0.35);
-  --hub-magenta: #ff5d8f;
-
-  /* Text */
-  --hub-cream: #d6cba8;
-  --hub-cream-bright: #efe6c9;
-  --hub-cream-dim: #8a8067;
-  --hub-cream-faint: #5a543f;
-
-  /* Typography */
-  --hub-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
-  --hub-font-sans: 'IBM Plex Sans', system-ui, sans-serif;
-  --hub-font-seg:  'Big Shoulders Display', 'IBM Plex Sans', sans-serif;
-
-  /* Spacing grid */
-  --hub-grid: 40px;
-  --hub-radius: 0px;
-  --hub-radius-soft: 2px;
-  --hub-radius-widget: 0px;
-  --hub-radius-button: 0px;
-
-  /* Per-style customs (overridden by [data-style]) */
-  --hub-widget-pad: 12px;
-  --hub-title-h: 34px;
-  --hub-glow-mul: 1;
-  --hub-clip-widget: none;
-  --hub-clip-title: none;
-  --hub-widget-blur: none;
-  --hub-widget-bg-alpha: 1;
-
-  /* Shadows */
-  --hub-shadow-amber: 0 0 6px var(--hub-amber-glow);
-  --hub-shadow-widget: 0 0 0 1px var(--hub-amber-dim);
-  --hub-shadow-inset: inset 0 1px 0 var(--hub-bevel-light), inset 0 -1px 0 var(--hub-bevel-dark);
-
-  /* Shell layout */
-  --hub-header-h: 52px;
-  --hub-bus-h: 28px;
-  --hub-footer-h: 28px;
-  --hub-sidebar-w: 200px;
-  --hub-sidebar-collapsed: 40px;
-  --hub-rail-w: 56px;
-
-  /* CRT */
-  --crt-scanline-opacity: 0.012;
-  --crt-vignette-opacity: 0.45;
-
-  /* Canvas */
-  --canvas-grid-opacity: 1;
-
-  /* Screw display toggle */
-  --screw-display: inline-block;
 }
-
-/* Accent colors are set at runtime by applyOrdeckTheme() via --accent-base / --accent-secondary */

@@ -33,10 +33,10 @@ const ACCENT = 'var(--hub-amber)';
 
 const panelBase: React.CSSProperties = {
   position: 'fixed', top: 0, right: 0,
-  height: '100dvh', width: 360,
+  height: '100dvh', width: 380,
   background: 'rgba(10, 9, 7, 0.96)',
   backdropFilter: 'blur(32px) saturate(160%)',
-  borderLeft: '1px solid rgba(255,255,255,0.07)',
+  borderLeft: '1px solid var(--hub-line)',
   boxShadow: '-24px 0 64px rgba(0,0,0,0.75)',
   zIndex: 400,
   display: 'flex', flexDirection: 'column',
@@ -56,10 +56,10 @@ function SectionLabel({ children }: { children: string }) {
       display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14,
     }}>
       <span style={{
-        fontSize: 9, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.28)',
+        fontSize: 9, letterSpacing: '0.2em', color: 'var(--hub-cream-faint)',
         textTransform: 'uppercase', fontFamily: FONT, flexShrink: 0,
       }}>{children}</span>
-      <span style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.07)' }} />
+      <span style={{ flex: 1, height: 1, background: 'var(--hub-line)' }} />
     </div>
   );
 }
@@ -234,9 +234,9 @@ export function UnifiedSettingsPanel({
               rel="noopener noreferrer"
               style={{
                 flex: 1, padding: '8px 12px', textAlign: 'center', textDecoration: 'none',
-                border: '1px solid rgba(255,255,255,0.1)',
+                border: '1px solid var(--hub-line)',
                 background: 'rgba(255,255,255,0.04)',
-                color: 'rgba(255,255,255,0.5)',
+                color: 'var(--hub-cream-dim)',
                 fontSize: 10, letterSpacing: '0.1em', fontFamily: FONT,
                 transition: 'all 0.12s',
               }}
@@ -249,19 +249,19 @@ export function UnifiedSettingsPanel({
               onClick={handleLogout}
               style={{
                 flex: 1, padding: '8px 12px',
-                border: '1px solid rgba(255,80,50,0.25)',
+                border: '1px solid color-mix(in srgb, var(--hub-red) 35%, transparent)',
                 background: 'transparent',
-                color: 'rgba(255,100,70,0.65)',
+                color: 'color-mix(in srgb, var(--hub-red) 65%, transparent)',
                 fontSize: 10, letterSpacing: '0.1em', cursor: 'pointer',
                 fontFamily: FONT, transition: 'all 0.12s', outline: 'none',
               }}
               onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,80,50,0.6)';
-                (e.currentTarget as HTMLElement).style.color = 'rgba(255,100,70,0.9)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'var(--hub-red-dim)';
+                (e.currentTarget as HTMLElement).style.color = 'var(--hub-red)';
               }}
               onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,80,50,0.25)';
-                (e.currentTarget as HTMLElement).style.color = 'rgba(255,100,70,0.65)';
+                (e.currentTarget as HTMLElement).style.borderColor = 'color-mix(in srgb, var(--hub-red) 35%, transparent)';
+                (e.currentTarget as HTMLElement).style.color = 'color-mix(in srgb, var(--hub-red) 65%, transparent)';
               }}
             >
               Sign out
@@ -287,7 +287,7 @@ function ColorRow({ label, color, onChange }: { label: string; color: string; on
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', width: 62, flexShrink: 0, fontFamily: FONT, letterSpacing: '0.06em' }}>
+      <span style={{ fontSize: 10, color: 'var(--hub-cream-faint)', width: 62, flexShrink: 0, fontFamily: FONT, letterSpacing: '0.06em' }}>
         {label}
       </span>
       <button type="button"
@@ -314,8 +314,8 @@ function ColorRow({ label, color, onChange }: { label: string; color: string; on
         style={{
           flex: 1,
           background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          color: /^#[0-9a-fA-F]{6}$/.test(draft) ? 'rgba(255,255,255,0.75)' : 'rgba(255,120,80,0.8)',
+          border: '1px solid var(--hub-line)',
+          color: /^#[0-9a-fA-F]{6}$/.test(draft) ? 'var(--hub-cream-bright)' : 'var(--hub-red)',
           padding: '5px 10px',
           fontFamily: FONT, fontSize: 11, letterSpacing: '0.08em',
           outline: 'none',
@@ -331,7 +331,7 @@ function EffectRow({ label, value, onToggle, children }: {
   return (
     <div style={{ marginBottom: 10 }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: children ? 7 : 0 }}>
-        <span style={{ fontSize: 11, color: value ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.32)', fontFamily: FONT, letterSpacing: '0.04em' }}>
+        <span style={{ fontSize: 11, color: value ? 'var(--hub-cream-bright)' : 'var(--hub-cream-faint)', fontFamily: FONT, letterSpacing: '0.04em' }}>
           {label}
         </span>
         <Toggle value={value} onChange={onToggle} />
@@ -389,7 +389,7 @@ function LazurRow({ label, value, onCommit, placeholder }: {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
-      <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', width: 44, flexShrink: 0, fontFamily: FONT, letterSpacing: '0.06em' }}>
+      <span style={{ fontSize: 10, color: 'var(--hub-cream-faint)', width: 44, flexShrink: 0, fontFamily: FONT, letterSpacing: '0.06em' }}>
         {label}
       </span>
       <input
@@ -403,8 +403,8 @@ function LazurRow({ label, value, onCommit, placeholder }: {
         style={{
           flex: 1,
           background: 'rgba(255,255,255,0.05)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          color: 'rgba(255,255,255,0.7)',
+          border: '1px solid var(--hub-line)',
+          color: 'var(--hub-cream)',
           padding: '5px 10px',
           fontFamily: FONT, fontSize: 10, letterSpacing: '0.04em', outline: 'none',
         }}

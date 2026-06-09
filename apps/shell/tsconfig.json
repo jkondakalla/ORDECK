@@ -5,7 +5,9 @@
     "paths": {
       "@hub/ui": ["../../packages/ui/src/index.ts"],
       "@hub/ui/*": ["../../packages/ui/src/*"],
-      "@hub/types": ["../../packages/types/src/index.ts"]
+      "@hub/types": ["../../packages/types/src/index.ts"],
+      "@design":    ["../../../Design"],
+      "@design/*":  ["../../../Design/*"]
     }
   },
   "include": ["src", "src/remotes.d.ts"]

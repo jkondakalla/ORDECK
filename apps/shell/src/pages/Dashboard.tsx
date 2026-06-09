@@ -99,7 +99,7 @@ const REGISTRY: Record<string, CanvasRegistryEntry> = {
   worldclocks: {
     type: 'worldclocks', label: 'WORLD CLOCKS', title: 'ZONES', code: 'WCK',
     glyph: '🌐', color: '#4ecdc4', header: 'tab', led: 'cyan',
-    subtitle: '6 TIMEZONES',
+    subtitle: '4 TIMEZONES',
     component: WorldClocksWidget, w: 8, h: 5,
   },
   calc: {
@@ -287,12 +287,10 @@ export default function Dashboard() {
     return saved ?? { widgets: DEFAULT_LAYOUT, nextId: DEFAULT_LAYOUT.length + 1 };
   });
   const [settings, setSetting, resetSettings] = useSettings();
-  const [configOpen, setConfigOpen]       = useState(false);
-  const [aiOpen, setAiOpen]               = useState(false);
-  const [profileOpen, setProfileOpen]     = useState(false);
-  const [paletteCollapsed, setPaletteCollapsed] = useState(() => {
-    try { return localStorage.getItem('ordeck-palette-collapsed') === '1'; } catch { return false; }
-  });
+  const [configOpen, setConfigOpen]   = useState(false);
+  const [aiOpen, setAiOpen]           = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const [contextState, setContextState] = useState<ContextState | null>(null);
 
   useEffect(() => { saveLayout(state); }, [state]);
@@ -393,51 +391,63 @@ export default function Dashboard() {
         aiOpen={aiOpen}
         onOpenProfile={() => setProfileOpen(o => !o)}
         profileOpen={profileOpen}
+        onOpenPalette={() => setPaletteOpen(o => !o)}
+        paletteOpen={paletteOpen}
       />
 
       {settings.showBus && <BusStrip />}
 
+      {/* Vignette overlay — opacity driven by --crt-vignette-opacity CSS var */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'fixed', inset: 0,
+          background: 'radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,0.85) 100%)',
+          opacity: 'var(--crt-vignette-opacity)' as any,
+          pointerEvents: 'none',
+          zIndex: 9991,
+        }}
+      />
+
+      {/* Main content: AppLauncher spine + Widget Canvas */}
       <div style={{
         position: 'fixed',
         top: contentTop,
         left: 0,
         right: settings.showRail ? 'var(--hub-rail-w)' : 0,
         bottom: 'var(--hub-footer-h)',
-        display: 'flex',
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        filter: effects.halation ? 'url(#hub-halation)' : undefined,
       }}>
-        <WidgetPalette
-          registry={SIDEBAR_REGISTRY}
-          sessions={sessions}
-          collapsed={paletteCollapsed}
-          onToggle={() => {
-            const next = !paletteCollapsed;
-            setPaletteCollapsed(next);
-            try { localStorage.setItem('ordeck-palette-collapsed', next ? '1' : '0'); } catch { /* ignore */ }
-          }}
-          onAddWidget={addWidget}
-          onResetLayout={resetLayout}
-          onClearAll={clearAll}
-        />
+        <AppLauncher user={user} />
 
-        {/* Portal main: AppLauncher + Widget Canvas */}
-        <div style={{
-          flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          filter: effects.halation ? 'url(#hub-halation)' : undefined,
-        }}>
-          <AppLauncher user={user} />
-
-          <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-            <Canvas
-              widgets={state.widgets}
-              registry={REGISTRY}
-              onUpdateWidget={updateWidget}
-              onCloseWidget={closeWidget}
-              onFocusWidget={focusWidget}
-              onContextWidget={openContext}
-            />
-          </div>
+        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+          {/* Canvas grid texture */}
+          <div
+            className="canvas-grid"
+            style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}
+          />
+          <Canvas
+            widgets={state.widgets}
+            registry={REGISTRY}
+            onUpdateWidget={updateWidget}
+            onCloseWidget={closeWidget}
+            onFocusWidget={focusWidget}
+            onContextWidget={openContext}
+          />
         </div>
       </div>
+
+      {/* Widget Palette — drawer overlay */}
+      <WidgetPalette
+        registry={SIDEBAR_REGISTRY}
+        sessions={sessions}
+        active={paletteOpen}
+        onAdd={addWidget}
+        onClose={() => setPaletteOpen(false)}
+        onResetLayout={resetLayout}
+        onClearAll={clearAll}
+      />
 
       {settings.showRail && (
         <div style={{

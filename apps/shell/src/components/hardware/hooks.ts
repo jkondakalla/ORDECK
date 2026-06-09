@@ -1,4 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+
+export type OsMode = 'paper' | 'dark';
+
+export function isDark(): boolean {
+  return document.documentElement.getAttribute('data-mode') === 'dark';
+}
+
+export function useMode(): OsMode {
+  const read = useCallback(
+    (): OsMode => (document.documentElement.getAttribute('data-mode') === 'dark' ? 'dark' : 'paper'),
+    [],
+  );
+  const [mode, setMode] = useState<OsMode>(read);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => setMode(read()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
+
+    const handler = () => setMode(read());
+    window.addEventListener('ordeck-mode', handler);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('ordeck-mode', handler);
+    };
+  }, [read]);
+
+  return mode;
+}
 
 export function useTick(ms = 1000): number {
   const [t, setT] = useState(0);

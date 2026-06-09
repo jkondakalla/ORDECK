@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { applyOrdeckTheme, DEFAULT_THEME } from './useJkOSTheme';
+import { applyJkOSMode } from '@design/utils/applyJkOSTheme';
 import type { JkOSTheme } from './useJkOSTheme';
 export type { JkOSTheme } from './useJkOSTheme';
 
@@ -52,6 +53,19 @@ function normaliseTheme(raw: any): JkOSTheme {
   };
 }
 
+function applyCrtOverlays(isDark: boolean, eff: EffectsPreferences): void {
+  const scanOp = isDark && eff.scanLines ? String(eff.scanStrength) : '0';
+  document.documentElement.style.setProperty('--crt-scanline-opacity', scanOp);
+}
+
+function applyAll(t: JkOSTheme, eff: EffectsPreferences): boolean {
+  const isDark = applyJkOSMode(t.mode);
+  applyOrdeckTheme(t);
+  applyCrtOverlays(isDark, eff);
+  window.dispatchEvent(new CustomEvent('ordeck-mode', { detail: { isDark } }));
+  return isDark;
+}
+
 export function useJkOSPreferences() {
   const [theme,   setTheme]   = useState<JkOSTheme>(DEFAULT_THEME);
   const [effects, setEffects] = useState<EffectsPreferences>(DEFAULT_EFFECTS);
@@ -65,13 +79,14 @@ export function useJkOSPreferences() {
       .then(data => {
         if (!data) return;
         if (data.user) setUser(data.user);
+        const fetchedEffects: EffectsPreferences = data.preferences?.effects
+          ? { ...DEFAULT_EFFECTS, ...data.preferences.effects }
+          : DEFAULT_EFFECTS;
+        if (data.preferences?.effects) setEffects(fetchedEffects);
         if (data.preferences?.theme) {
           const t = normaliseTheme(data.preferences.theme);
           setTheme(t);
-          applyOrdeckTheme(t);
-        }
-        if (data.preferences?.effects) {
-          setEffects(prev => ({ ...prev, ...data.preferences.effects }));
+          applyAll(t, fetchedEffects);
         }
         if (data.preferences?.lazuros) {
           setLazuros(prev => ({ ...prev, ...data.preferences.lazuros }));
@@ -79,6 +94,15 @@ export function useJkOSPreferences() {
       })
       .catch(() => {});
   }, []);
+
+  // Re-apply mode when OS dark preference changes (only relevant in 'system' mode)
+  useEffect(() => {
+    if (theme.mode !== 'system') return;
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = () => applyAll(theme, effects);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, [theme, effects]);
 
   const patch = useCallback(async (preferences: object) => {
     setSaving(true);
@@ -97,13 +121,17 @@ export function useJkOSPreferences() {
   const patchTheme = useCallback((partial: Partial<JkOSTheme>) => {
     const next = { ...theme, ...partial };
     setTheme(next);
-    applyOrdeckTheme(next);
+    applyAll(next, effects);
     patch({ theme: next });
-  }, [theme, patch]);
+  }, [theme, effects, patch]);
 
   const patchEffects = useCallback((partial: Partial<EffectsPreferences>) => {
     const next = { ...effects, ...partial };
     setEffects(next);
+    if ('scanLines' in partial || 'scanStrength' in partial) {
+      const isDark = document.documentElement.getAttribute('data-mode') === 'dark';
+      applyCrtOverlays(isDark, next);
+    }
     patch({ effects: next });
   }, [effects, patch]);
 

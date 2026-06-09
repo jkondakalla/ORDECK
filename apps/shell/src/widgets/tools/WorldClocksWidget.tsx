@@ -7,8 +7,6 @@ const ZONES = [
   { id: 'nyc', label: 'NYC', name: 'New York',       tz: 'America/New_York' },
   { id: 'lhr', label: 'LHR', name: 'London',         tz: 'Europe/London' },
   { id: 'sin', label: 'SIN', name: 'Singapore',      tz: 'Asia/Singapore' },
-  { id: 'syd', label: 'SYD', name: 'Sydney',         tz: 'Australia/Sydney' },
-  { id: 'utc', label: 'UTC', name: 'Universal',      tz: 'UTC' },
 ];
 
 export default function WorldClocksWidget() {

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 
 const LINES = [
-  'ORDECK OS v1.0.0 // CONTROL SURFACE',
-  'INITIALIZING TERMINAL INTERFACE',
-  'LOADING MODULE REGISTRY',
-  'MOUNTING USER WORKSPACE',
-  'SCANNING CONNECTED SERVICES',
+  'ORDECK OS v2.0 // jkOS CONTROL SURFACE',
+  'LOADING DESIGN TOKENS // @design/tokens/hub.css',
+  'APPLYING SUITE MODE  // data-mode: paper',
+  'MOUNTING WIDGET RUNTIME',
+  'SCANNING jkOS SUITE REGISTRY',
+  'AUTH GATEWAY READY   // auth.jkos.net',
   'READY.',
 ];
 
